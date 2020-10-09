@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-This module provides method to authenicate subsequential requests to NYPL Platorm
-by obtaining an access token.
+bookops_nypl_platform.authorize
+===============================
+This module provides method to authenicate subsequent requests to NYPL Platform
+by obtaining an access token used for authorization.
 """
 import datetime
 import sys
-from typing import Union, Tuple
+from typing import Dict, Union, Tuple, Type
 
 import requests
 
@@ -38,7 +40,7 @@ class PlatformToken:
         client_secret: str,
         oauth_server: str,
         agent: str = None,
-        timeout: Union[int, float, Tuple] = None,
+        timeout: Union[int, float, Tuple[int, int], Tuple[float, float]] = None,
     ):
         """Constructior"""
 
@@ -71,7 +73,7 @@ class PlatformToken:
     def _header(self):
         return {"User-Agent": self.agent}
 
-    def _parse_access_token_string(self, server_response: dict) -> str:
+    def _parse_access_token_string(self, server_response: Dict) -> str:
         """
         Parsers access token string from auth_server response
 
@@ -88,7 +90,9 @@ class PlatformToken:
                 "Missing access_token parameter in the oauth_server response."
             )
 
-    def _calculate_expiration_time(self, server_response: dict):
+    def _calculate_expiration_time(
+        self, server_response: Dict
+    ) -> Type[datetime.datetime]:
         """
         Calculates access token expiration time based on it's life lenght
         indicated in oauth_server response
