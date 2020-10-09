@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
+import datetime
 
 import pytest
 
@@ -99,15 +99,12 @@ class TestPlatformToken:
             token._parse_access_token_string(arg)
             assert err_msg in str(exc.value)
 
-    def test_calculate_expiration_time_success(self, mock_token):
+    def test_calculate_expiration_time_success(self, mock_token, mock_datetime_now):
         token = mock_token
         res = {"expires_in": 3600}
-        now = datetime.now()
-        assert (
-            (now + timedelta(seconds=3600))
-            > (token._calculate_expiration_time(res))
-            >= (now + timedelta(seconds=3599))
-        )
+        assert token._calculate_expiration_time(res) == datetime.datetime(
+            2019, 1, 1, 17, 0, 0
+        ) + datetime.timedelta(seconds=3599)
 
     @pytest.mark.parametrize(
         "arg,expectation",
@@ -140,7 +137,9 @@ class TestPlatformToken:
         with pytest.raises(BookopsPlatformError):
             PlatformToken("my_client_id", "my_client_secret", "oauth_url")
 
-    def test_get_token_success(self, mock_successful_post_token_response):
+    def test_get_token_success(
+        self, mock_successful_post_token_response, mock_datetime_now
+    ):
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         res = {
             "access_token": "token_string_here",
@@ -151,7 +150,9 @@ class TestPlatformToken:
         }
         assert token.token_request_response == res
         assert token.token_str == "token_string_here"
-        assert token.expires_on == datetime.now() + timedelta(seconds=3599)
+        assert token.expires_on == datetime.datetime(
+            2019, 1, 1, 17, 0, 0
+        ) + datetime.timedelta(seconds=3599)
 
     def test_is_expired_False(self, mock_token):
         token = mock_token
@@ -159,13 +160,14 @@ class TestPlatformToken:
 
     def test_is_expired_True(self, mock_token):
         token = mock_token
-        token.expires_on = datetime.now() - timedelta(seconds=1)
+        token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
         assert token.is_expired() is True
 
-    def test_printing_token(self, mock_token):
-        token = mock_token
-        expires_on = datetime.now() + timedelta(seconds=3599)
+    def test_printing_token(
+        self, mock_successful_post_token_response, mock_datetime_now
+    ):
+        token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert (
             str(token)
-            == f"<token: token_string_here, expires_on: {expires_on:%Y-%m-%d %H:%M:%S}, token_request_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
+            == f"<token: token_string_here, expires_on: 2019-01-01 17:59:59, token_request_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
         )
