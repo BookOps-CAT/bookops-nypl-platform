@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
+import datetime
 
 # import json
 
@@ -9,6 +9,12 @@ import requests
 
 
 from bookops_nypl_platform import PlatformToken
+
+
+class FakeDate(datetime.datetime):
+    @classmethod
+    def now(cls):
+        return cls(2019, 1, 1, 17, 0, 0)
 
 
 class MockUnexpectedException:
@@ -86,3 +92,8 @@ def mock_timeout(monkeypatch):
 @pytest.fixture
 def mock_connectionerror(monkeypatch):
     monkeypatch.setattr("requests.post", MockConnectionError)
+
+
+@pytest.fixture
+def mock_datetime_now(monkeypatch):
+    monkeypatch.setattr(datetime, "datetime", FakeDate)
