@@ -4,7 +4,7 @@
 This module provides method to authenicate subsequential requests to NYPL Platorm
 by obtaining an access token.
 """
-from datetime import datetime, timedelta
+import datetime
 import sys
 from typing import Union, Tuple
 
@@ -100,7 +100,7 @@ class PlatformToken:
             expires_on:         datetime object
         """
         try:
-            expires_on = datetime.now() + timedelta(
+            expires_on = datetime.datetime.now() + datetime.timedelta(
                 seconds=server_response["expires_in"] - 1
             )
             return expires_on
@@ -159,7 +159,7 @@ class PlatformToken:
         False
 
         """
-        if self.expires_on < datetime.now():
+        if self.expires_on < datetime.datetime.now():
             return True
         else:
             return False
