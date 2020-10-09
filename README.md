@@ -6,7 +6,7 @@ BookOps Python wrapper around NYPL Platform API
 WORK-IN-PROGRESS
 
 Bookops-nypl-platform provides a Python interface for the internal NYPL Platform API.
-It provides supports functionality relevant to BookOps and is not a full implementaiton of NYPL Platform API.
+It provides functionality relevant to BookOps and is not a full implementaiton of NYPL Platform API.
 
 ## Version
 
