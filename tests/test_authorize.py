@@ -102,8 +102,11 @@ class TestPlatformToken:
     def test_calculate_expiration_time_success(self, mock_token):
         token = mock_token
         res = {"expires_in": 3600}
-        assert token._calculate_expiration_time(res) == datetime.now() + timedelta(
-            seconds=3599
+        now = datetime.now()
+        assert (
+            (now + timedelta(seconds=3600))
+            > (token._calculate_expiration_time(res))
+            >= (now + timedelta(seconds=3599))
         )
 
     @pytest.mark.parametrize(
@@ -164,5 +167,5 @@ class TestPlatformToken:
         expires_on = datetime.now() + timedelta(seconds=3599)
         assert (
             str(token)
-            == f"<token: token_string_here, expires_on: {expires_on}, token_request_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
+            == f"<token: token_string_here, expires_on: {expires_on:%Y-%m-%d %H:%M:%S}, token_request_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
         )

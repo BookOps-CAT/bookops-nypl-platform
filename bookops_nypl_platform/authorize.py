@@ -165,4 +165,4 @@ class PlatformToken:
             return False
 
     def __repr__(self):
-        return f"<token: {self.token_str}, expires_on: {self.expires_on}, token_request_response: {self.token_request_response}>"
+        return f"<token: {self.token_str}, expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, token_request_response: {self.token_request_response}>"
