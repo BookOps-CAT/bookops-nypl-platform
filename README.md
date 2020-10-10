@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.com/BookOps-CAT/bookops-nypl-platform.svg?branch=master)](https://travis-ci.com/BookOps-CAT/bookops-nypl-platform) [![Coverage Status](https://coveralls.io/repos/github/BookOps-CAT/bookops-nypl-platform/badge.svg?branch=master)](https://coveralls.io/github/BookOps-CAT/bookops-nypl-platform?branch=master) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# bookops-nypl-platform
+# bookops-nypl-platform client
 BookOps Python wrapper around NYPL Platform API
+
+Requries Python 3.7 & up.
 
 WORK-IN-PROGRESS
 
@@ -23,3 +25,9 @@ It provides functionality relevant to BookOps and is not a full implementaiton o
 ```
 
 ## Changelog
+
+
+## References
++ [NYPL Platform API Swagger](https://platformdocs.nypl.org/)
++ [NYPL Platform API Documentation](https://docs.google.com/document/d/1p3q9OT9latXqON20WDh4CNPxIShUunfGgqT163r-Caw/edit?usp=sharing)
++ [ruby-nypl-platfom-api-client](https://github.com/NYPL/ruby-nypl-platform-api-client)
