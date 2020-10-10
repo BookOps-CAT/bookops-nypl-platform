@@ -8,7 +8,7 @@ Requries Python 3.7 & up.
 WORK-IN-PROGRESS
 
 Bookops-nypl-platform client provides a Python interface for the internal NYPL Platform API.
-It provides functionality relevant to BookOps and is not a full implementaiton of NYPL Platform API.
+It provides functionality relevant to BookOps and is not a full implementation of the NYPL Platform API.
 
 ## Version
 
