@@ -45,7 +45,9 @@ class PlatformSession(requests.Session):
         elif target == "dev":
             self.base_url = "https://dev-platform.nypl.org/api/v0.1"
         else:
-            raise BookopsPlatformError("Invalid target passed into a Platform session.")
+            raise BookopsPlatformError(
+                "Invalid `target` argument passed into a Platform session."
+            )
 
         if agent is None:
             self.headers.update({"User-Agent": f"{__title__}/{__version__}"})
