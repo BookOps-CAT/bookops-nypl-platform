@@ -26,6 +26,8 @@ class PlatformToken:
         client_id:         client id
         client_secret:         client secret
         outh_server:    NYPL OAuth Server
+        agent:          "User-Agent" parameter to be passed in the request
+                        header
         timeout:        how long to wait for server to respond before
                         giving up; default value is 3 seconds
 
@@ -70,9 +72,6 @@ class PlatformToken:
     def _token_url(self) -> str:
         return f"{self.oauth_server}/oauth/token"
 
-    def _header(self):
-        return {"User-Agent": self.agent}
-
     def _parse_access_token_string(self, server_response: Dict) -> str:
         """
         Parsers access token string from auth_server response
@@ -116,19 +115,16 @@ class PlatformToken:
     def _get_token(self):
         """
         Fetches NYPL Platform access token
-
-        Returns:
-            token
         """
         token_url = self._token_url()
-        headers = self._header()
+        header = {"User-Agent": self.agent}
         data = {"grant_type": "client_credentials"}
 
         try:
             response = requests.post(
                 token_url,
                 auth=self.auth,
-                headers=headers,
+                headers=header,
                 data=data,
                 timeout=self.timeout,
             )

@@ -66,12 +66,6 @@ class TestPlatformToken:
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert token._token_url() == "oauth_url/oauth/token"
 
-    def test_header(self, mock_successful_post_token_response):
-        token = PlatformToken(
-            "my_client_id", "my_client_secret", "oauth_url", agent="my_client/1.0"
-        )
-        assert token._header() == {"User-Agent": "my_client/1.0"}
-
     def test_parse_access_token_string_sucess(self, mock_token):
         token = mock_token
         res = {
