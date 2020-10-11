@@ -13,3 +13,7 @@ def test_title():
 
 def test_PlatfromToken_top_level_import():
     from bookops_nypl_platform import PlatformToken
+
+
+def test_PlatformSession_top_level_import():
+    from bookops_nypl_platform import PlatformSession
