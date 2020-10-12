@@ -77,8 +77,8 @@ class PlatformSession(requests.Session):
         # set token bearer for the session
         self._update_authorization()
 
-    def _update_authorization(self):
-        self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
+    def _check_bib_is_research_url(self, id: Union[str, int], nyplSource: str) -> str:
+        return f"{self.base_url}/bibs/{nyplSource}/{id}/is-research"
 
     def _fetch_new_token(self):
         """
@@ -91,11 +91,14 @@ class PlatformSession(requests.Session):
         except BookopsPlatformError:
             raise
 
-    def _get_bib_url(self, id, nyplSource):
+    def _get_bib_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}"
 
-    def _get_bib_list_url(self):
+    def _get_bib_list_url(self) -> str:
         return f"{self.base_url}/bibs"
+
+    def _get_bib_items_url(self, id: Union[str, int], nyplSource: str) -> str:
+        return f"{self.base_url}/bibs/{nyplSource}/{id}/items"
 
     def _prep_multi_keywords(self, keywords):
         if type(keywords) is str:
@@ -110,7 +113,12 @@ class PlatformSession(requests.Session):
         else:
             return keywords
 
-    def get_bib(self, id: str, nyplSource: str = "sierra-nypl", hooks=None):
+    def _update_authorization(self):
+        self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
+
+    def get_bib(
+        self, id: str, nyplSource: str = "sierra-nypl", hooks=None
+    ) -> Type[requests.Response]:
         """
         Requests a specific resource using its id number.
 
@@ -120,7 +128,7 @@ class PlatformSession(requests.Session):
                             the 'b' prefix and without the last check digit
                             example: '21790265'
 
-            nyplSource:     data source; default 'sierra-nypl'
+            nyplSource:     data source; default 'sierra-nypl'; required
             hooks:          Requests library hook system that can be
                             used for signal event handling, see more at:
                             https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
@@ -128,8 +136,10 @@ class PlatformSession(requests.Session):
         Returns:
             `requests.Response` object
         """
-        if not id:
-            raise BookopsPlatformError("Required argument `id` is missing.")
+        if not all([id, nyplSource]):
+            raise BookopsPlatformError(
+                "Both arguments `id` and `nyplSource` are required."
+            )
 
         url = self._get_bib_url(id, nyplSource)
 
@@ -160,7 +170,7 @@ class PlatformSession(requests.Session):
         limit: int = 10,
         offset: int = 1,
         hooks: Dict = None,
-    ):
+    ) -> Type[requests.Response]:
         """
         Retrieve multiple resources using a variety of indexes, for example:
         Sierra bib #s, standard numbers & control numbers
@@ -185,10 +195,12 @@ class PlatformSession(requests.Session):
                             used for signal event handling, see more at:
                             https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
+        Returns:
+            `requests.Response` object
 
         """
 
-        # format argument accordingly:
+        # format any search keywords:
         id = self._prep_multi_keywords(id)
         standardNumber = self._prep_multi_keywords(standardNumber)
         controlNumber = self._prep_multi_keywords(controlNumber)
@@ -215,6 +227,49 @@ class PlatformSession(requests.Session):
 
         # send request
         try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def get_bib_items(
+        self, id: Union[str, int], nyplSource: str = "sierra-nypl", hooks: Dict = None
+    ) -> Type[requests.Response]:
+        """
+        Retrieves items linked to a specified bib
+
+        Args:
+            id:             resource id; for Sierra bibliographic
+                            records that means Sierra bib number without
+                            the 'b' prefix and without the last check digit
+                            example: '21790265'
+
+            nyplSource:     data source; default 'sierra-nypl'; required
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+
+        if not all([id, nyplSource]):
+            raise BookopsPlatformError(
+                "Both arguments `id` and `nyplSource` are required."
+            )
+
+        url = self._get_bib_items_url(id, nyplSource)
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
             response = self.get(url, timeout=self.timeout, hooks=hooks)
             return response
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
@@ -224,11 +279,47 @@ class PlatformSession(requests.Session):
         except Exception:
             raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
 
-    def get_bib_items(self):
-        pass
+    def check_bib_is_research(
+        self, id: Union[str, int], nyplSource: str = "sierra-nypl", hooks: Dict = None
+    ) -> Type[requests.Response]:
+        """
+        Checks if bib is a reaserch libraries bib
 
-    def check_bib_is_research(self):
-        pass
+        Args:
+            id:             resource id; for Sierra bibliographic
+                            records that means Sierra bib number without
+                            the 'b' prefix and without the last check digit
+                            example: '21790265'
+
+            nyplSource:     data source; default 'sierra-nypl'; required
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+        if not all([id, nyplSource]):
+            raise BookopsPlatformError(
+                "Both arguments `id` and `nyplSource` are required."
+            )
+
+        url = self._check_bib_is_research_url(id, nyplSource)
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
 
     def search_standardNos(
         self,
@@ -236,7 +327,7 @@ class PlatformSession(requests.Session):
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
-    ):
+    ) -> Type[requests.Response]:
         pass
 
     def search_controlNos(
@@ -245,7 +336,7 @@ class PlatformSession(requests.Session):
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
-    ):
+    ) -> Type[requests.Response]:
         pass
 
     def search_bidNos(
@@ -253,5 +344,5 @@ class PlatformSession(requests.Session):
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
-    ):
+    ) -> Type[requests.Response]:
         pass

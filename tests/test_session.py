@@ -117,6 +117,20 @@ class TestPlatformSession:
                 session._get_bib_list_url() == "https://platform.nypl.org/api/v0.1/bibs"
             )
 
+    def test_get_bib_items_url(self, mock_token):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._get_bib_items_url(1234567, "sierra-nypl")
+                == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/items"
+            )
+
+    def test_get_bib_is_reasearch(self, mock_token):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._check_bib_is_research_url("1234567", "sierra-nypl")
+                == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/is-research"
+            )
+
     @pytest.mark.parametrize(
         "arg,expectation",
         [
@@ -141,12 +155,21 @@ class TestPlatformSession:
             response = session.get_bib("12345678")
             assert response.status_code == 200
 
-    @pytest.mark.parametrize("arg", ["", None])
-    def test_get_bib_without_id(self, mock_token, arg):
+    @pytest.mark.parametrize(
+        "arg_id, arg_src",
+        [
+            ("", None),
+            ("", "sierra-nypl"),
+            ("123456", ""),
+            (None, None),
+            ("123456", None),
+        ],
+    )
+    def test_get_bib_without_id(self, mock_token, arg_id, arg_src):
         with PlatformSession(authorization=mock_token) as session:
             err_msg = "Required argument `id` is missing."
             with pytest.raises(BookopsPlatformError) as exc:
-                session.get_bib("")
+                session.get_bib(arg_id, nyplSource=arg_src)
                 assert err_msg in str(exc.value)
 
     def test_get_bib_with_stale_token(
@@ -249,3 +272,127 @@ class TestPlatformSession:
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_list(id="12345678")
+
+    def test_get_bib_items_success(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_bib_items("12345678")
+            assert response.status_code == 200
+
+    @pytest.mark.parametrize(
+        "arg_id,arg_src",
+        [
+            ("", None),
+            ("", "sierra-nypl"),
+            ("123456", ""),
+            (None, None),
+            ("123456", None),
+        ],
+    )
+    def test_get_bib_items_without_id(self, mock_token, arg_id, arg_src):
+        with PlatformSession(authorization=mock_token) as session:
+            err_msg = "Required argument `id` is missing."
+            with pytest.raises(BookopsPlatformError) as exc:
+                session.get_bib_items(arg_id, nyplSource=arg_src)
+                assert err_msg in str(exc.value)
+
+    def test_get_bib_items_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is False
+            session.authorization.expires_on = (
+                datetime.datetime.now() - datetime.timedelta(seconds=1)
+            )
+            assert session.authorization.is_expired() is True
+            response = session.get_bib_items("12345678")
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_get_bib_items_BookopsPlatformError_exception(
+        self, mock_token, mock_bookopsplatformerror
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_items("12345678")
+
+    def test_get_bib_itmes_Timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_items("12345678")
+
+    def test_get_bib_items_Connection_exception(self, mock_token, mock_connectionerror):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_items("12345678")
+
+    def test_get_bib_items_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_items("12345678")
+
+    def test_check_bib_is_research_success(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.check_bib_is_research("12345678")
+            assert response.status_code == 200
+
+    @pytest.mark.parametrize(
+        "arg_id,arg_src",
+        [
+            ("", None),
+            ("", "sierra-nypl"),
+            ("123456", ""),
+            (None, None),
+            ("123456", None),
+        ],
+    )
+    def test_check_bib_is_research_without_id(self, mock_token, arg_id, arg_src):
+        with PlatformSession(authorization=mock_token) as session:
+            err_msg = "Required argument `id` is missing."
+            with pytest.raises(BookopsPlatformError) as exc:
+                session.check_bib_is_research(arg_id, nyplSource=arg_src)
+                assert err_msg in str(exc.value)
+
+    def test_check_bib_is_research_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is False
+            session.authorization.expires_on = (
+                datetime.datetime.now() - datetime.timedelta(seconds=1)
+            )
+            assert session.authorization.is_expired() is True
+            response = session.check_bib_is_research("12345678")
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_check_bib_is_research_BookopsPlatformError_exception(
+        self, mock_token, mock_bookopsplatformerror
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.check_bib_is_research("12345678")
+
+    def test_check_bib_is_research_Timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.check_bib_is_research("12345678")
+
+    def test_check_bib_is_research_Connection_exception(
+        self, mock_token, mock_connectionerror
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.check_bib_is_research("12345678")
+
+    def test_check_bib_is_research_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.check_bib_is_research("12345678")
