@@ -396,3 +396,60 @@ class TestPlatformSession:
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.check_bib_is_research("12345678")
+
+    @pytest.mark.parametrize(
+        "arg",
+        ["", [], None],
+    )
+    def test_search_standardNos_argument_errors(self, mock_token, arg):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError) as exc:
+                session.search_standardNos(arg)
+                err_msg = "Missing required positional argument `standardNos`."
+                assert err_msg in str(exc.value)
+
+    def test_search_standardNos_successful_request(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.search_standardNos(keywords=[12345, 12346])
+            assert response.status_code == 200
+
+    def test_search_standardNos_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is False
+            session.authorization.expires_on = (
+                datetime.datetime.now() - datetime.timedelta(seconds=1)
+            )
+            assert session.authorization.is_expired() is True
+            response = session.search_standardNos(keywords="12345678")
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_search_standardNos_BookopsPlatformError_exception(
+        self, mock_token, mock_bookopsplatformerror
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.search_standardNos(keywords="12345678")
+
+    def test_search_standardNos_Timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.search_standardNos(keywords="12345678")
+
+    def test_search_standardNos_Connection_exception(
+        self, mock_token, mock_connectionerror
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.search_standardNos(keywords="12345678")
+
+    def test_search_standardNos_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.search_standardNos(keywords="12345678")

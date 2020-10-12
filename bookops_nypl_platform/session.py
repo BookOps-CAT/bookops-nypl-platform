@@ -323,12 +323,62 @@ class PlatformSession(requests.Session):
 
     def search_standardNos(
         self,
-        standardNos: Union[str, List[str], List[int]],
+        keywords: Union[str, List[str], List[int]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
+        hooks: Dict = None,
     ) -> Type[requests.Response]:
-        pass
+        """
+        Makes a request for bibs with matching standard numbers (ISBNs or UPCs) from the
+        020 or 024 MARC tag.
+
+        Args:
+            keywords:       list of standard numbers such as ISBNs or UPCs (020 and
+                            024 MARC tags); can be a comma separated string or a
+                            list of strings
+            deleted:        True or False
+            limit:          number of records to retrieve per request
+            offset:         starting number of results page
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+
+        """
+
+        keywords = self._prep_multi_keywords(keywords)
+
+        if not keywords:
+            raise BookopsPlatformError(
+                "Missing required positional argument `keywords`."
+            )
+
+        url = self._get_bib_list_url()
+        payload = {
+            "standardNumber": keywords,
+            "nyplSource": "sierra-nypl",
+            "deleted": deleted,
+            "limit": limit,
+            "offset": offset,
+        }
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
 
     def search_controlNos(
         self,
