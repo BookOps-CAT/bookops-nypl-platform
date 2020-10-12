@@ -8,7 +8,7 @@ to NYPL Platform API
 """
 
 import sys
-from typing import Tuple, Type, Union
+from typing import Dict, List, Tuple, Type, Union
 
 import requests
 
@@ -94,6 +94,22 @@ class PlatformSession(requests.Session):
     def _get_bib_url(self, id, nyplSource):
         return f"{self.base_url}/bibs/{nyplSource}/{id}"
 
+    def _get_bib_list_url(self):
+        return f"{self.base_url}/bibs"
+
+    def _prep_multi_keywords(self, keywords):
+        if type(keywords) is str:
+            keywords = keywords.strip()
+        elif type(keywords) is int:
+            keywords = str(keywords)
+        elif type(keywords) is list:
+            keywords = ",".join([str(k) for k in keywords])
+
+        if not keywords:
+            return None
+        else:
+            return keywords
+
     def get_bib(self, id: str, nyplSource: str = "sierra-nypl", hooks=None):
         """
         Requests a specific resource using its id number.
@@ -104,7 +120,7 @@ class PlatformSession(requests.Session):
                             the 'b' prefix and without the last check digit
                             example: '21790265'
 
-            nyplSource:     data source; default `sierra-nypl`
+            nyplSource:     data source; default 'sierra-nypl'
             hooks:          Requests library hook system that can be
                             used for signal event handling, see more at:
                             https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
@@ -132,20 +148,110 @@ class PlatformSession(requests.Session):
         except Exception:
             raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
 
-    def get_bib_list(self):
-        pass
+    def get_bib_list(
+        self,
+        id: Union[str, List[str], List[int]] = None,
+        standardNumber: Union[str, List[str]] = None,
+        controlNumber: Union[str, List[str]] = None,
+        nyplSource: str = "nypl-sierra",
+        deleted: bool = False,
+        createdDate: str = None,
+        updatedDate: str = None,
+        limit: int = 10,
+        offset: int = 1,
+        hooks: Dict = None,
+    ):
+        """
+        Retrieve multiple resources using a variety of indexes, for example:
+        Sierra bib #s, standard numbers & control numbers
+
+        Args:
+            id:             list of resource ids; can be a comma separated string
+                            or list of strings
+            standardNumber: list of standard numbers such as ISBNs or UPCs (020 & 024
+                            MARC tags); can be a comma separated string or a list of
+                            strings
+            controlNumber:  list of MARC control numbers (001 MARC tag); can be a comma
+                            seperated string or a list of strings
+            nyplSource:     data source; default 'sierra-nypl'
+            deleted:        True or False
+            createdDate:    specific start date or date range as a string, example:
+                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            updatedDate:    specific start date or date range as a string, example:
+                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            limit:          number of records to retrieve per request
+            offset:         starting number of results page
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+
+        """
+
+        # format argument accordingly:
+        id = self._prep_multi_keywords(id)
+        standardNumber = self._prep_multi_keywords(standardNumber)
+        controlNumber = self._prep_multi_keywords(controlNumber)
+
+        if not any([id, standardNumber, controlNumber]):
+            raise BookopsPlatformError("Missing required positional argument.")
+
+        url = self._get_bib_list_url()
+        payload = {
+            "id": id,
+            "standardNumber": standardNumber,
+            "controlNumber": controlNumber,
+            "nyplSource": nyplSource,
+            "deleted": deleted,
+            "createdDate": createdDate,
+            "updatedDate": updatedDate,
+            "limit": limit,
+            "offset": offset,
+        }
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
 
     def get_bib_items(self):
-        pass
-
-    def get_item(self):
-        pass
-
-    def get_item_list(self):
         pass
 
     def check_bib_is_research(self):
         pass
 
-    def check_item_is_research(self):
+    def search_standardNos(
+        self,
+        standardNos: Union[str, List[str], List[int]],
+        deleted: bool = False,
+        limit: int = 10,
+        offset: int = 1,
+    ):
+        pass
+
+    def search_controlNos(
+        self,
+        controlNos: Union[str, List[str], List[int]],
+        deleted: bool = False,
+        limit: int = 10,
+        offset: int = 1,
+    ):
+        pass
+
+    def search_bidNos(
+        bibNos: Union[str, List[str], List[int]],
+        deleted: bool = False,
+        limit: int = 10,
+        offset: int = 1,
+    ):
         pass

@@ -3,6 +3,7 @@
 """
 bookops_nypl_platform.session testing
 """
+from contextlib import contextmanager
 import datetime
 import pytest
 
@@ -11,6 +12,11 @@ import requests
 from bookops_nypl_platform import __title__, __version__
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
+
+
+@contextmanager
+def does_not_raise():
+    yield
 
 
 class TestPlatformSession:
@@ -105,6 +111,31 @@ class TestPlatformSession:
                 == "https://dev-platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567"
             )
 
+    def test_get_bib_list_url(self, mock_token):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._get_bib_list_url() == "https://platform.nypl.org/api/v0.1/bibs"
+            )
+
+    @pytest.mark.parametrize(
+        "arg,expectation",
+        [
+            (None, None),
+            ("", None),
+            ([], None),
+            ("12345", "12345"),
+            (12345, "12345"),
+            (["12345"], "12345"),
+            ([12345], "12345"),
+            ([12345, 12346], "12345,12346"),
+            (["12345", "12346"], "12345,12346"),
+            ("12345,12346", "12345,12346"),
+        ],
+    )
+    def test_prep_multi_keywords(self, mock_token, arg, expectation):
+        with PlatformSession(authorization=mock_token) as session:
+            assert session._prep_multi_keywords(arg) == expectation
+
     def test_get_bib_success(self, mock_token, mock_successful_session_get_response):
         with PlatformSession(authorization=mock_token) as session:
             response = session.get_bib("12345678")
@@ -152,3 +183,69 @@ class TestPlatformSession:
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib("12345678")
+
+    @pytest.mark.parametrize(
+        "id_arg,sn_arg,cn_arg",
+        [(None, None, None), ("", "", ""), ([], [], [])],
+    )
+    def test_get_bib_list_arguments_errors(self, mock_token, id_arg, sn_arg, cn_arg):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError) as exc:
+                session.get_bib_list(id_arg, sn_arg, cn_arg)
+                err_msg = "Missing required positional argument."
+                assert err_msg in str(exc.value)
+
+    @pytest.mark.parametrize(
+        "id_arg,sn_arg,cn_arg",
+        [
+            ("12345678", None, None),
+            (None, "9781234567890", None),
+            (None, None, "12345"),
+        ],
+    )
+    def test_get_bib_list_correct_ids(self, mock_token, id_arg, sn_arg, cn_arg):
+        with PlatformSession(authorization=mock_token) as session:
+            with does_not_raise():
+                session.get_bib_list(id_arg, sn_arg, cn_arg)
+
+    def test_get_bib_list_successful_request(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_bib_list(standardNumber=[12345, 12346])
+            assert response.status_code == 200
+
+    def test_get_bib_list_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is False
+            session.authorization.expires_on = (
+                datetime.datetime.now() - datetime.timedelta(seconds=1)
+            )
+            assert session.authorization.is_expired() is True
+            response = session.get_bib_list(id="12345678")
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_get_bib_list_BookopsPlatformError_exception(
+        self, mock_token, mock_bookopsplatformerror
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_list(id="12345678")
+
+    def test_get_bib_list_Timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_list(id="12345678")
+
+    def test_get_bib_list_Connection_exception(self, mock_token, mock_connectionerror):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_list(id="12345678")
+
+    def test_get_bib_list_unexpected_exception(self, mock_token, mock_unexpected_error):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_bib_list(id="12345678")
