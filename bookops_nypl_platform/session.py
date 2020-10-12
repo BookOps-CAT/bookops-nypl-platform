@@ -100,7 +100,19 @@ class PlatformSession(requests.Session):
     def _get_bib_items_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}/items"
 
-    def _prep_multi_keywords(self, keywords):
+    def _prep_multi_keywords(
+        self, keywords: Union[str, List[str], List[int]]
+    ) -> List[str]:
+        """
+        Verifies or converts passed keywords into a comma separated string.
+
+        Args:
+            keywords:       a comma separated string of keywords or a list
+                            of strings or integers
+
+        Returns:
+            keywords:       a comma separated string of keywords
+        """
         if type(keywords) is str:
             keywords = keywords.strip()
         elif type(keywords) is int:
@@ -113,20 +125,69 @@ class PlatformSession(requests.Session):
         else:
             return keywords
 
+    def _prep_sierra_number(self, bid: Union[str, int]) -> str:
+        """
+        Verifies and converts Sierra bib numbers
+
+        Args:
+            bid:            Sierra bib number as string or int
+
+        Returns:
+            bid
+        """
+        err_msg = "Invalid Sierra bib number passed."
+
+        if type(bid) is int:
+            bid = str(bid)
+
+        if "b" in bid.lower():
+            bid = bid[1:]
+        if len(bid) == 8:
+            if not bid.isdigit():
+                raise BookopsPlatformError(err_msg)
+        elif len(bid) == 9:
+            bid = bid[:8]
+            if not bid.isdigit():
+                raise BookopsPlatformError(err_msg)
+        else:
+            raise BookopsPlatformError(err_msg)
+
+        return bid
+
+    def _prep_sierra_numbers(self, bibNos: str) -> str:
+        """
+        Verifies or conversts passed Sierra bib numbers into a comma separated string.
+
+        Args:
+            bibNos:         a comma separated string of Sierra bib numbers
+
+        Returns:
+            verified_nos:   a comma separated string of Sierrra bib numbers
+        """
+        verified_nos = []
+
+        for bid in bibNos.split(","):
+            bid = self._prep_sierra_number(bid)
+            verified_nos.append(bid)
+
+        return ",".join(verified_nos)
+
     def _update_authorization(self):
+        """
+        Updates Bearer token in PlatformSession headers
+        """
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
     def get_bib(
-        self, id: str, nyplSource: str = "sierra-nypl", hooks=None
+        self, id: Union[str, int], nyplSource: str = "sierra-nypl", hooks=None
     ) -> Type[requests.Response]:
         """
         Requests a specific resource using its id number.
 
         Args:
             id:             resource id; for Sierra bibliographic
-                            records that means Sierra bib number without
-                            the 'b' prefix and without the last check digit
-                            example: '21790265'
+                            records that means Sierra bib number with or without
+                            'b' prefix and 9th digit check
 
             nyplSource:     data source; default 'sierra-nypl'; required
             hooks:          Requests library hook system that can be
@@ -140,6 +201,9 @@ class PlatformSession(requests.Session):
             raise BookopsPlatformError(
                 "Both arguments `id` and `nyplSource` are required."
             )
+
+        # verify id
+        id = self._prep_sierra_number(id)
 
         url = self._get_bib_url(id, nyplSource)
 
@@ -182,7 +246,7 @@ class PlatformSession(requests.Session):
                             MARC tags); can be a comma separated string or a list of
                             strings
             controlNumber:  list of MARC control numbers (001 MARC tag); can be a comma
-                            seperated string or a list of strings
+                            separated string or a list of strings
             nyplSource:     data source; default 'sierra-nypl'
             deleted:        True or False
             createdDate:    specific start date or date range as a string, example:
@@ -207,6 +271,10 @@ class PlatformSession(requests.Session):
 
         if not any([id, standardNumber, controlNumber]):
             raise BookopsPlatformError("Missing required positional argument.")
+
+        # additionally verify Sierra bib numbers
+        if id:
+            id = self._prep_sierra_numbers(id)
 
         url = self._get_bib_list_url()
         payload = {
@@ -262,6 +330,9 @@ class PlatformSession(requests.Session):
                 "Both arguments `id` and `nyplSource` are required."
             )
 
+        # verify id
+        id = self._prep_sierra_number(id)
+
         url = self._get_bib_items_url(id, nyplSource)
 
         # check if token expired and request new one if needed
@@ -304,6 +375,9 @@ class PlatformSession(requests.Session):
                 "Both arguments `id` and `nyplSource` are required."
             )
 
+        # verify id
+        id = self._prep_sierra_number(id)
+
         url = self._check_bib_is_research_url(id, nyplSource)
 
         # check if token expired and request new one if needed
@@ -323,7 +397,7 @@ class PlatformSession(requests.Session):
 
     def search_standardNos(
         self,
-        keywords: Union[str, List[str], List[int]],
+        keywords: Union[str, List[str]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
@@ -382,17 +456,121 @@ class PlatformSession(requests.Session):
 
     def search_controlNos(
         self,
-        controlNos: Union[str, List[str], List[int]],
+        keywords: Union[str, List[str]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
+        hooks: Dict = None,
     ) -> Type[requests.Response]:
-        pass
+        """
+        Makes a request for bibs with matching control numbers from the 001 MARC tag.
 
-    def search_bidNos(
-        bibNos: Union[str, List[str], List[int]],
+        Args:
+            keywords:       list of control numbers (001 MARC tag);
+                            can be a comma separated string or a list of strings
+            deleted:        True or False
+            limit:          number of records to retrieve per request
+            offset:         starting number of results page
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+
+        """
+
+        keywords = self._prep_multi_keywords(keywords)
+
+        if not keywords:
+            raise BookopsPlatformError(
+                "Missing required positional argument `keywords`."
+            )
+
+        url = self._get_bib_list_url()
+        payload = {
+            "controlNumber": keywords,
+            "nyplSource": "sierra-nypl",
+            "deleted": deleted,
+            "limit": limit,
+            "offset": offset,
+        }
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def search_bibNos(
+        self,
+        keywords: Union[str, List[str], List[int]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 1,
+        hooks: Dict = None,
     ) -> Type[requests.Response]:
-        pass
+        """
+        Makes a request for resources with matching Sierra bib numbers.
+
+        Args:
+            keywords:       list of Sierra bib numbers;
+                            can be a comma separated string or a list of strings or
+                            integers;
+                            bib numbers can be a string of 8 digits, or can include
+                            the 'b' prefix and last, 9th digit check
+            deleted:        True or False
+            limit:          number of records to retrieve per request
+            offset:         starting number of results page
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+
+        """
+
+        # prep Sierra bib numbers
+        keywords = self._prep_multi_keywords(keywords)
+
+        if not keywords:
+            raise BookopsPlatformError(
+                "Missing required positional argument `keywords`."
+            )
+
+        keywords = self._prep_sierra_numbers(keywords)
+
+        # prep request
+        url = self._get_bib_list_url()
+        payload = {
+            "id": keywords,
+            "nyplSource": "sierra-nypl",
+            "deleted": deleted,
+            "limit": limit,
+            "offset": offset,
+        }
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
