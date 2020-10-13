@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-
-# import json
+import os
+import json
 
 import pytest
 import requests
@@ -124,3 +124,24 @@ def mock_bookopsplatformerror(monkeypatch):
 @pytest.fixture
 def mock_datetime_now(monkeypatch):
     monkeypatch.setattr(datetime, "datetime", FakeDate)
+
+
+@pytest.fixture
+def live_keys():
+    if os.name == "nt":
+        fh = os.path.join(os.environ["USERPROFILE"], ".platform/tomasz_platform.json")
+        with open(fh, "r") as file:
+            data = json.load(file)
+            os.environ["NPclient_id"] = data["client-id"]
+            os.environ["NPclient_secret"] = data["client-secret"]
+            os.environ["NPoauth_server"] = data["oauth-server"]
+            os.environ["NPagent"] = data["agent"]
+
+    else:
+        # Travis env variables defined in the repository settings
+        pass
+
+
+@pytest.fixture
+def live_token():
+    pass

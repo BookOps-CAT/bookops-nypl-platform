@@ -25,7 +25,7 @@ class PlatformToken:
     Args:
         client_id:         client id
         client_secret:         client secret
-        outh_server:    NYPL OAuth Server
+        oauth_server:    NYPL OAuth Server
         agent:          "User-Agent" parameter to be passed in the request
                         header
         timeout:        how long to wait for server to respond before
@@ -52,7 +52,7 @@ class PlatformToken:
 
         self.token_str = None
         self.expires_on = None
-        self.token_request_response = None
+        self.server_response = None
         self.auth = (client_id, client_secret)
         self.oauth_server = oauth_server
 
@@ -129,13 +129,9 @@ class PlatformToken:
                 timeout=self.timeout,
             )
             if response.status_code == requests.codes.ok:
-                self.token_request_response = response.json()
-                self.token_str = self._parse_access_token_string(
-                    self.token_request_response
-                )
-                self.expires_on = self._calculate_expiration_time(
-                    self.token_request_response
-                )
+                self.server_response = response
+                self.token_str = self._parse_access_token_string(response.json())
+                self.expires_on = self._calculate_expiration_time(response.json())
             else:
                 raise BookopsPlatformError(
                     f"Invalid request. Oauth server retruned error: {response.json()}"
@@ -165,4 +161,4 @@ class PlatformToken:
             return False
 
     def __repr__(self):
-        return f"<token: {self.token_str}, expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, token_request_response: {self.token_request_response}>"
+        return f"<token: {self.token_str}, expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, server_response: {self.server_response.json()}>"

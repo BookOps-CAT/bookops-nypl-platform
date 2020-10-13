@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import os
 
 import pytest
 
@@ -142,7 +143,7 @@ class TestPlatformToken:
             "scope": "scopes_here",
             "id_token": "token_string_here",
         }
-        assert token.token_request_response == res
+        assert token.server_response.json() == res
         assert token.token_str == "token_string_here"
         assert token.expires_on == datetime.datetime(
             2019, 1, 1, 17, 0, 0
@@ -163,5 +164,28 @@ class TestPlatformToken:
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert (
             str(token)
-            == f"<token: token_string_here, expires_on: 2019-01-01 17:59:59, token_request_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
+            == f"<token: token_string_here, expires_on: 2019-01-01 17:59:59, server_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
         )
+
+
+@pytest.mark.webtest
+class TestLiveAuthentication:
+    """Runs access token request against live authentication server"""
+
+    def test_access_token(self, live_keys):
+        agent = os.getenv("NPagent")
+        token = PlatformToken(
+            client_id=os.getenv("NPclient_id"),
+            client_secret=os.getenv("NPclient_secret"),
+            oauth_server=os.getenv("NPoauth_server"),
+            agent=f"{agent}/testing",
+        )
+
+        assert token.server_response.status_code == 200
+        assert sorted(token.server_response.json().keys()) == sorted(
+            ["access_token", "expires_in", "token_type", "scope", "id_token"]
+        )
+        assert token.token_str is not None
+        assert len(token.token_str) > 0
+        assert token.expires_on is not None
+        assert token.is_expired() is False
