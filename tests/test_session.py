@@ -5,11 +5,13 @@ bookops_nypl_platform.session testing
 """
 from contextlib import contextmanager
 import datetime
+import os
 import pytest
 
 import requests
 
 from bookops_nypl_platform import __title__, __version__
+from bookops_nypl_platform.authorize import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
 
@@ -643,3 +645,53 @@ class TestPlatformSession:
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.search_bibNos(keywords="12345678")
+
+
+@pytest.mark.webtest
+class TestLivePlatform:
+    """ Runs rudimentary tests against live NYPL Platform endpoints"""
+
+    def test_get_bib(self, live_token):
+        """Tests get_bib method"""
+        top_keys = sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
+        bib_data_keys = sorted(
+            [
+                "id",
+                "nyplSource",
+                "nyplType",
+                "updatedDate",
+                "createdDate",
+                "deletedDate",
+                "deleted",
+                "locations",
+                "suppressed",
+                "lang",
+                "title",
+                "author",
+                "materialType",
+                "bibLevel",
+                "publishYear",
+                "catalogDate",
+                "country",
+                "normTitle",
+                "normAuthor",
+                "standardNumbers",
+                "controlNumber",
+                "fixedFields",
+                "varFields",
+            ]
+        )
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.get_bib(id=21790265)
+
+            assert response.status_code == 200
+            assert (
+                response.url
+                == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265"
+            )
+            assert response.request.headers["User-Agent"] == agent
+            assert response.request.headers["Accept"] == "application/json"
+            assert sorted(response.json().keys()) == top_keys
+            assert sorted(response.json()["data"].keys()) == bib_data_keys

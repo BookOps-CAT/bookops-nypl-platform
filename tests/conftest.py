@@ -143,5 +143,12 @@ def live_keys():
 
 
 @pytest.fixture
-def live_token():
-    pass
+def live_token(live_keys):
+    agent = os.getenv("NPagent")
+    token = PlatformToken(
+        client_id=os.getenv("NPclient_id"),
+        client_secret=os.getenv("NPclient_secret"),
+        oauth_server=os.getenv("NPoauth_server"),
+        agent=f"{agent}/testing",
+    )
+    return token
