@@ -63,9 +63,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
             "materialType": {
                 "code": "a",
                 "value": "BOOK/TEXT"
-            },
-        ...
-        }
+            },        }
     ],
     "count": 1,
     "totalCount": 0,
