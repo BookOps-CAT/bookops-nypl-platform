@@ -63,7 +63,8 @@ It provides functionality relevant to BookOps and is not a full implementation o
             "materialType": {
                 "code": "a",
                 "value": "BOOK/TEXT"
-            },        }
+            },        
+        }
     ],
     "count": 1,
     "totalCount": 0,
@@ -72,7 +73,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 }
 ```
 
-**Retrieve bibs by control numbers**
+**Retrieve bibs by control numbers** 
 context manager:
 ```python
 with PlatformSession(authorization=token) as session:
