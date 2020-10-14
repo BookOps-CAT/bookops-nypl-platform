@@ -23,14 +23,20 @@ class PlatformSession(requests.Session):
     to send requests to it.
 
     Args:
-        authorization:                  authorization in form of the `PlatformToken` instance
+        authorization:          authorization in form of the `PlatformToken` instance
         target:                 production ('prod') or development ('dev')
                                 environment; default production
         agent:                  "User-agent" parameter to be passed in the request
                                 header; usage strongly encouraged
         timeout:                how long to wait for server to send data before
                                 giving up; default value is 3 seconds
+    Example:
 
+    >>> from bookops_nypl_platform import PlatformSession
+    >>> with PlatformSession(authorization=token, agent="my_client") as session:
+            response = session.search_standardNos(
+                keywords=["9780316230032", "0674976002"])
+            print(response.json())
     """
 
     def __init__(
