@@ -227,12 +227,12 @@ class PlatformSession(requests.Session):
         id: Union[str, List[str], List[int]] = None,
         standardNumber: Union[str, List[str]] = None,
         controlNumber: Union[str, List[str]] = None,
-        nyplSource: str = "nypl-sierra",
+        nyplSource: str = "sierra-nypl",
         deleted: bool = False,
         createdDate: str = None,
         updatedDate: str = None,
         limit: int = 10,
-        offset: int = 1,
+        offset: int = 0,
         hooks: Dict = None,
     ) -> Type[requests.Response]:
         """
@@ -400,7 +400,7 @@ class PlatformSession(requests.Session):
         keywords: Union[str, List[str]],
         deleted: bool = False,
         limit: int = 10,
-        offset: int = 1,
+        offset: int = 0,
         hooks: Dict = None,
     ) -> Type[requests.Response]:
         """
@@ -459,7 +459,7 @@ class PlatformSession(requests.Session):
         keywords: Union[str, List[str]],
         deleted: bool = False,
         limit: int = 10,
-        offset: int = 1,
+        offset: int = 0,
         hooks: Dict = None,
     ) -> Type[requests.Response]:
         """
@@ -516,7 +516,7 @@ class PlatformSession(requests.Session):
         keywords: Union[str, List[str], List[int]],
         deleted: bool = False,
         limit: int = 10,
-        offset: int = 1,
+        offset: int = 0,
         hooks: Dict = None,
     ) -> Type[requests.Response]:
         """
