@@ -152,3 +152,62 @@ def live_token(live_keys):
         agent=f"{agent}/testing",
     )
     return token
+
+
+@pytest.fixture
+def response_top_keys():
+    return sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
+
+
+@pytest.fixture
+def bib_data_keys():
+    return sorted(
+        [
+            "id",
+            "nyplSource",
+            "nyplType",
+            "updatedDate",
+            "createdDate",
+            "deletedDate",
+            "deleted",
+            "locations",
+            "suppressed",
+            "lang",
+            "title",
+            "author",
+            "materialType",
+            "bibLevel",
+            "publishYear",
+            "catalogDate",
+            "country",
+            "normTitle",
+            "normAuthor",
+            "standardNumbers",
+            "controlNumber",
+            "fixedFields",
+            "varFields",
+        ]
+    )
+
+
+@pytest.fixture
+def bib_items_keys():
+    return sorted(
+        [
+            "nyplSource",
+            "bibIds",
+            "id",
+            "nyplType",
+            "updatedDate",
+            "createdDate",
+            "deletedDate",
+            "deleted",
+            "location",
+            "status",
+            "barcode",
+            "callNumber",
+            "itemType",
+            "fixedFields",
+            "varFields",
+        ]
+    )

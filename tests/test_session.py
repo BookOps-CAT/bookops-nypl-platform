@@ -651,36 +651,8 @@ class TestPlatformSession:
 class TestLivePlatform:
     """ Runs rudimentary tests against live NYPL Platform endpoints"""
 
-    def test_get_bib(self, live_token):
+    def test_get_bib(self, live_token, response_top_keys, bib_data_keys):
         """Tests get_bib method"""
-        top_keys = sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
-        bib_data_keys = sorted(
-            [
-                "id",
-                "nyplSource",
-                "nyplType",
-                "updatedDate",
-                "createdDate",
-                "deletedDate",
-                "deleted",
-                "locations",
-                "suppressed",
-                "lang",
-                "title",
-                "author",
-                "materialType",
-                "bibLevel",
-                "publishYear",
-                "catalogDate",
-                "country",
-                "normTitle",
-                "normAuthor",
-                "standardNumbers",
-                "controlNumber",
-                "fixedFields",
-                "varFields",
-            ]
-        )
         agent = os.getenv("NPagent")
         agent = f"{agent}/testing"
         with PlatformSession(authorization=live_token, agent=agent) as session:
@@ -693,5 +665,91 @@ class TestLivePlatform:
             )
             assert response.request.headers["User-Agent"] == agent
             assert response.request.headers["Accept"] == "application/json"
-            assert sorted(response.json().keys()) == top_keys
+            assert sorted(response.json().keys()) == response_top_keys
             assert sorted(response.json()["data"].keys()) == bib_data_keys
+
+    def test_get_bib_list(self, live_token, response_top_keys, bib_data_keys):
+
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.get_bib_list(id=["b21790265a", "b21721339a"], limit=15)
+
+            assert response.status_code == 200
+            assert (
+                response.url
+                == "https://platform.nypl.org/api/v0.1/bibs?id=21790265%2C21721339&nyplSource=sierra-nypl&deleted=False&limit=15&offset=0"
+            )
+            assert sorted(response.json().keys()) == response_top_keys
+            assert response.json()["count"] == 2
+            assert sorted(response.json()["data"][0].keys()) == bib_data_keys
+
+    def test_get_bib_items(self, live_token, response_top_keys, bib_items_keys):
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.get_bib_items(id="b21790265a")
+
+            assert response.status_code == 200
+            assert (
+                response.url
+                == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265/items"
+            )
+            assert sorted(response.json().keys()) == response_top_keys
+            assert response.json()["count"] == 1
+            assert sorted(response.json()["data"][0].keys()) == bib_items_keys
+
+    def test_check_bib_is_research(self, live_token):
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.check_bib_is_research(id="b21790265a")
+
+            assert response.status_code == 200
+            assert (
+                response.url
+                == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265/is-research"
+            )
+            assert sorted(response.json().keys()) == sorted(
+                ["nyplSource", "id", "isResearch"]
+            )
+
+    def test_search_standardNos(self, live_token):
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.search_standardNos(
+                keywords=["9780316230032", "0674976002"], limit=12
+            )
+
+            assert response.status_code == 200
+            assert (
+                response.url
+                == "https://platform.nypl.org/api/v0.1/bibs?standardNumber=9780316230032%2C0674976002&nyplSource=sierra-nypl&deleted=False&limit=12&offset=1"
+            )
+
+    def test_search_controlNos(self, live_token):
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.search_controlNos(
+                keywords=["1089804986", "1006480637"], limit=1, offset=1
+            )
+        assert response.status_code == 200
+        assert (
+            response.url
+            == "https://platform.nypl.org/api/v0.1/bibs?controlNumber=1089804986%2C1006480637&nyplSource=sierra-nypl&deleted=False&limit=1&offset=1"
+        )
+
+    def test_search_bibNos(self, live_token):
+        agent = os.getenv("NPagent")
+        agent = f"{agent}/testing"
+        with PlatformSession(authorization=live_token, agent=agent) as session:
+            response = session.search_bibNos(
+                keywords=[21790265, 21721339], limit=1, offset=1
+            )
+        assert response.status_code == 200
+        assert (
+            response.url
+            == "https://platform.nypl.org/api/v0.1/bibs?id=21790265%2C21721339&nyplSource=sierra-nypl&deleted=False&limit=1&offset=1"
+        )
