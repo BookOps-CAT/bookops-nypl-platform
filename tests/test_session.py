@@ -725,7 +725,7 @@ class TestLivePlatform:
             assert response.status_code == 200
             assert (
                 response.url
-                == "https://platform.nypl.org/api/v0.1/bibs?standardNumber=9780316230032%2C0674976002&nyplSource=sierra-nypl&deleted=False&limit=12&offset=1"
+                == "https://platform.nypl.org/api/v0.1/bibs?standardNumber=9780316230032%2C0674976002&nyplSource=sierra-nypl&deleted=False&limit=12&offset=0"
             )
 
     def test_search_controlNos(self, live_token):
