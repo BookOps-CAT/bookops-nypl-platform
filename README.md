@@ -13,6 +13,14 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 > 0.1.0
 
+## Installation
+
+Install via pip:
+
+```bash
+python -m pip install git+https://github.com/BookOps-CAT/bookops_nypl_platform
+```
+
 ## Basic usage
 **Access Token**
 
