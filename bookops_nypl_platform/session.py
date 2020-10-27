@@ -106,6 +106,9 @@ class PlatformSession(requests.Session):
     def _get_bib_items_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}/items"
 
+    def _get_item_list_url(self) -> str:
+        return f"{self.base_url}/items"
+
     def _prep_multi_keywords(
         self, keywords: Union[str, List[str], List[int]]
     ) -> List[str]:
@@ -131,48 +134,48 @@ class PlatformSession(requests.Session):
         else:
             return keywords
 
-    def _prep_sierra_number(self, bid: Union[str, int]) -> str:
+    def _prep_sierra_number(self, sid: Union[str, int]) -> str:
         """
-        Verifies and converts Sierra bib numbers
+        Verifies and formats Sierra bib numbers
 
         Args:
-            bid:            Sierra bib number as string or int
+            sid:            Sierra bib or item number as string or int
 
         Returns:
-            bid
+            sid
         """
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
 
-        if type(bid) is int:
-            bid = str(bid)
+        if type(sid) is int:
+            sid = str(sid)
 
-        if "b" in bid.lower():
-            bid = bid[1:]
-        if len(bid) == 8:
-            if not bid.isdigit():
+        if sid.lower()[0] in ("b", "i"):
+            sid = sid[1:]
+        if len(sid) == 8:
+            if not sid.isdigit():
                 raise BookopsPlatformError(err_msg)
-        elif len(bid) == 9:
-            bid = bid[:8]
-            if not bid.isdigit():
+        elif len(sid) == 9:
+            sid = sid[:8]
+            if not sid.isdigit():
                 raise BookopsPlatformError(err_msg)
         else:
             raise BookopsPlatformError(err_msg)
 
-        return bid
+        return sid
 
-    def _prep_sierra_numbers(self, bibNos: str) -> str:
+    def _prep_sierra_numbers(self, sids: str) -> str:
         """
         Verifies or conversts passed Sierra bib numbers into a comma separated string.
 
         Args:
-            bibNos:         a comma separated string of Sierra bib numbers
+            sids:           a comma separated string of Sierra bib numbers
 
         Returns:
             verified_nos:   a comma separated string of Sierrra bib numbers
         """
         verified_nos = []
 
-        for bid in bibNos.split(","):
+        for bid in sids.split(","):
             bid = self._prep_sierra_number(bid)
             verified_nos.append(bid)
 
@@ -242,7 +245,7 @@ class PlatformSession(requests.Session):
         hooks: Dict = None,
     ) -> Type[requests.Response]:
         """
-        Retrieve multiple resources using a variety of indexes, for example:
+        Retrieve multiple bib resources using a variety of indexes, for example:
         Sierra bib #s, standard numbers & control numbers
 
         Args:
@@ -348,6 +351,85 @@ class PlatformSession(requests.Session):
         # send request
         try:
             response = self.get(url, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def get_item_list(
+        self,
+        id: Union[str, List[str], List[int]] = None,
+        barcode: str = None,
+        bibId: Union[str, int] = None,
+        nyplSource: str = "sierra-nypl",
+        deleted: bool = False,
+        createdDate: str = None,
+        updatedDate: str = None,
+        limit: int = 10,
+        offset: int = 0,
+        hooks: Dict = None,
+    ) -> Type[requests.Response]:
+        """
+        Retrieve multiple item resources using a variety of indexes, for example:
+        Sierra item numbers, barcodes, bib number.
+
+        Args:
+            id:             list of item record ids; can be a comma separated string
+                            or list of strings
+            barcode:        barcode string
+            bibId:          Sierra bib number
+            nyplSource:     data source; default 'sierra-nypl'
+            deleted:        True or False
+            createdDate:    specific start date or date range as a string, example:
+                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            updatedDate:    specific start date or date range as a string, example:
+                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            limit:          number of records to retrieve per request
+            offset:         starting number of results page
+            hooks:          Requests library hook system that can be
+                            used for signal event handling, see more at:
+                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+
+        # format any search keywords:
+        id = self._prep_multi_keywords(id)
+
+        if not any([id, barcode, bibId]):
+            raise BookopsPlatformError("Missing required positional argument.")
+
+        if id:
+            id = self._prep_sierra_numbers(id)
+
+        # additionally verify Sierra bib numbers
+        if bibId:
+            bibId = self._prep_sierra_number(bibId)
+
+        url = self._get_item_list_url()
+        payload = {
+            "id": id,
+            "barcode": barcode,
+            "bibId": bibId,
+            "nyplSource": nyplSource,
+            "deleted": deleted,
+            "createdDate": createdDate,
+            "updatedDate": updatedDate,
+            "limit": limit,
+            "offset": offset,
+        }
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
             return response
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
