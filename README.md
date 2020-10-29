@@ -18,7 +18,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 Install via pip:
 
 ```bash
-python -m pip install git+https://github.com/BookOps-CAT/bookops_nypl_platform
+python -m pip install git+https://github.com/BookOps-CAT/bookops-nypl-platform
 ```
 
 ## Basic usage
