@@ -11,7 +11,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 ## Version
 
-> 0.1.0
+> 0.2.1
 
 ## Installation
 
@@ -89,6 +89,12 @@ with PlatformSession(authorization=token) as session:
 ```
 
 ## Changelog
+
++ 0.2.1
+    + Metadata fixes in pyproject.toml to indicate the client supports Python 3.7
+    + Dependencies updates
++ 0.2.0
+    + /v0.1/items `get_item_list` a method to retrieve a list of item records
 
 
 ## References
