@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bookops-nypl-platform"
-version = "0.2.0"
+version = "0.2.1"
 description = "BookOps Python wrapper around NYPL Platform API"
 license = "MIT"
 authors = ["Tomasz Kalata <klingaroo@gmail.com>"]
