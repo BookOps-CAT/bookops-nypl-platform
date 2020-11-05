@@ -31,7 +31,7 @@ class TestPlatformToken:
     def test_missing_init_arguments(self, args, msg):
         with pytest.raises(BookopsPlatformError) as exc:
             PlatformToken(*args)
-            assert msg in str(exc.value)
+        assert msg in str(exc.value)
 
     def test_auth(self, mock_successful_post_token_response):
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
@@ -92,7 +92,7 @@ class TestPlatformToken:
         err_msg = "Missing access_token parameter in the oauth_server response."
         with expectation as exc:
             token._parse_access_token_string(arg)
-            assert err_msg in str(exc.value)
+        assert err_msg in str(exc.value)
 
     def test_calculate_expiration_time_success(self, mock_token, mock_datetime_now):
         token = mock_token
@@ -114,7 +114,7 @@ class TestPlatformToken:
         err_msg = "Missing expires_in parameter in the oauth_server response."
         with expectation as exc:
             token._calculate_expiration_time(arg)
-            assert err_msg in str(exc.value)
+        assert err_msg in str(exc.value)
 
     def test_get_token_timeout(self, mock_timeout):
         with pytest.raises(BookopsPlatformError):

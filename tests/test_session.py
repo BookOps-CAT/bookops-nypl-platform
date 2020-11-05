@@ -11,7 +11,8 @@ import pytest
 import requests
 
 from bookops_nypl_platform import __title__, __version__
-from bookops_nypl_platform.authorize import PlatformToken
+
+# from bookops_nypl_platform.authorize import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
 
@@ -27,10 +28,10 @@ class TestPlatformSession:
     """
 
     def test_authorization_invalid_argument(self):
+        err_msg = "Invalid authorization. Argument must be an instance of `PlatformToken` obj."
         with pytest.raises(BookopsPlatformError) as exc:
-            err_msg = "Invalid authorization. Argument must be an instance of `PlatformToken` obj."
             PlatformSession("my_token")
-            assert err_msg in str(exc.value)
+        assert err_msg in str(exc.value)
 
     @pytest.mark.parametrize(
         "arg,expectation",
@@ -46,10 +47,10 @@ class TestPlatformSession:
         )
 
     def test_target_argument_exception(self, mock_token):
+        err_msg = "Invalid `target` argument passed into a Platform session."
         with pytest.raises(BookopsPlatformError) as exc:
-            err_msg = "Invalid `target` argument passed into a Platform session."
             PlatformSession(authorization=mock_token, target=None)
-            assert err_msg in str(exc.value)
+        assert err_msg in str(exc.value)
 
     def test_default_base_url_parameter(self, mock_token):
         assert (
@@ -66,10 +67,10 @@ class TestPlatformSession:
             assert session.headers["User-Agent"] == "my_app"
 
     def test_invalid_agent_argument_exception(self, mock_token):
+        err_msg = "Argument `agent` must be a string."
         with pytest.raises(BookopsPlatformError) as exc:
-            err_msg = "Argument `agent` must be a string."
             PlatformSession(authorization=mock_token, agent=1234)
-            assert err_msg in str(exc.value)
+        assert err_msg in str(exc.value)
 
     def test_default_timeout_parameter(self, mock_token):
         with PlatformSession(authorization=mock_token) as session:
@@ -181,11 +182,11 @@ class TestPlatformSession:
         [12345, 1234567890, "12345", "bl1234567", "a12345678"],
     )
     def test_prep_sierra_number_exceptions(self, mock_token, arg):
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session._prep_sierra_number(arg)
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     @pytest.mark.parametrize(
         "arg,expectation",
@@ -205,11 +206,11 @@ class TestPlatformSession:
         "arg", ["12345", "bl1234569", "a123456789", "b12345", "1234567890"]
     )
     def test_prep_sierra_numbers_exceptions(self, mock_token, arg):
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session._prep_sierra_numbers(arg)
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_get_bib_success(self, mock_token, mock_successful_session_get_response):
         with PlatformSession(authorization=mock_token) as session:
@@ -227,18 +228,18 @@ class TestPlatformSession:
         ],
     )
     def test_get_bib_without_id(self, mock_token, arg_id, arg_src):
+        err_msg = "Both arguments `id` and `nyplSource` are required."
         with PlatformSession(authorization=mock_token) as session:
-            err_msg = "Required argument `id` is missing."
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_bib(arg_id, nyplSource=arg_src)
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_get_bib_with_invalid_id(self, mock_token):
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_bib("bt1234567")
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_get_bib_with_stale_token(
         self, mock_token, mock_successful_session_get_response
@@ -280,11 +281,11 @@ class TestPlatformSession:
         [(None, None, None), ("", "", ""), ([], [], [])],
     )
     def test_get_bib_list_arguments_errors(self, mock_token, id_arg, sn_arg, cn_arg):
+        err_msg = "Missing required positional argument."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_bib_list(id_arg, sn_arg, cn_arg)
-                err_msg = "Missing required positional argument."
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     @pytest.mark.parametrize(
         "id_arg,sn_arg,cn_arg",
@@ -361,18 +362,18 @@ class TestPlatformSession:
         ],
     )
     def test_get_bib_items_without_id(self, mock_token, arg_id, arg_src):
+        err_msg = "Both arguments `id` and `nyplSource` are required."
         with PlatformSession(authorization=mock_token) as session:
-            err_msg = "Required argument `id` is missing."
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_bib_items(arg_id, nyplSource=arg_src)
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_get_bib_items_with_invalid_bibNo(self, mock_token):
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_bib_items("a12345678")
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_get_bib_items_with_stale_token(
         self, mock_token, mock_successful_session_get_response
@@ -416,11 +417,11 @@ class TestPlatformSession:
         [(None, None, None), ("", "", ""), ([], [], [])],
     )
     def test_get_item_list_arguments_errors(self, mock_token, id_arg, ba_arg, bi_arg):
+        err_msg = "Missing required positional argument."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_item_list(id_arg, ba_arg, bi_arg)
-                err_msg = "Missing required positional argument."
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     @pytest.mark.parametrize(
         "id_arg,ba_arg,bi_arg",
@@ -499,18 +500,18 @@ class TestPlatformSession:
         ],
     )
     def test_check_bib_is_research_without_id(self, mock_token, arg_id, arg_src):
+        err_msg = "Both arguments `id` and `nyplSource` are required."
         with PlatformSession(authorization=mock_token) as session:
-            err_msg = "Required argument `id` is missing."
             with pytest.raises(BookopsPlatformError) as exc:
                 session.check_bib_is_research(arg_id, nyplSource=arg_src)
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_check_bib_is_research_with_invald_id(self, mock_token):
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.check_bib_is_research("a12345678")
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_check_bib_is_research_with_stale_token(
         self, mock_token, mock_successful_session_get_response
@@ -556,11 +557,11 @@ class TestPlatformSession:
         ["", [], None],
     )
     def test_search_standardNos_argument_errors(self, mock_token, arg):
+        err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.search_standardNos(arg)
-                err_msg = "Missing required positional argument `standardNos`."
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_search_standardNos_successful_request(
         self, mock_token, mock_successful_session_get_response
@@ -613,11 +614,11 @@ class TestPlatformSession:
         ["", [], None],
     )
     def test_search_controlNos_argument_errors(self, mock_token, arg):
+        err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.search_controlNos(arg)
-                err_msg = "Missing required positional argument `standardNos`."
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_search_controlNos_successful_request(
         self, mock_token, mock_successful_session_get_response
@@ -670,18 +671,18 @@ class TestPlatformSession:
         ["", [], None],
     )
     def test_search_bibNos_argument_missing(self, mock_token, arg):
+        err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.search_bibNos(arg)
-                err_msg = "Missing required positional argument `standardNos`."
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_search_bibNos_invalid_number(self, mock_token):
-        err_msg = "Invalid Sierra bib number passed."
+        err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.search_bibNos("a12345678")
-                assert err_msg in str(exc.value)
+            assert err_msg in str(exc.value)
 
     def test_search_bibNos_successful_request(
         self, mock_token, mock_successful_session_get_response
