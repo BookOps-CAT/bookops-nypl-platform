@@ -785,12 +785,12 @@ class TestLivePlatform:
         agent = os.getenv("NPagent")
         agent = f"{agent}/testing"
         with PlatformSession(authorization=live_token, agent=agent) as session:
-            response = session.get_item_list(id="i304400737")
+            response = session.get_item_list(id="i372231731")
 
             assert response.status_code == 200
             assert (
                 response.url
-                == "https://platform.nypl.org/api/v0.1/items?id=30440073&nyplSource=sierra-nypl&deleted=False&limit=10&offset=0"
+                == "https://platform.nypl.org/api/v0.1/items?id=37223173&nyplSource=sierra-nypl&deleted=False&limit=10&offset=0"
             )
             assert sorted(response.json().keys()) == response_top_keys
 
