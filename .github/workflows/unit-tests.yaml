@@ -1,4 +1,4 @@
-name: bookops-nypl-platform-unit-tests
+name: tests
 on: [push, pull_request]
 jobs:
   test:
