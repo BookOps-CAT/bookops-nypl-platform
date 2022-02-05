@@ -2,12 +2,6 @@ name: bookops-nypl-platform unit tests
 
 on: [push, pull_request]
 
-env:
-  NP_AGENT: ${{ env.NP_AGENT}}
-  NP_CLIENT_ID: ${{ env.NP_CLIENT_ID}}
-  NP_CLIENT_SECRET: ${{ env.NP_CLIENT_SECRET}}
-  NP_OAUTH_SERVER: ${{ env.NP_OAUTH_SERVER}}
-
 jobs:
   test:
     runs-on: ubuntu-latest
