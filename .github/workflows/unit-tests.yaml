@@ -1,0 +1,29 @@
+name: bookops-nypl-platform unit tests
+on: [push, pull_requests]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fail-fast: false
+        python-versions: ["3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version}}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pil install -r dev-requirements.txt
+
+      - name: Test with pytest
+        run: pytest --cov=bookops-nypl-platform/
+
+      - name: Send report to Coveralls
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN}}
