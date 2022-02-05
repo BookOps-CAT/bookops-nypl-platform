@@ -5,17 +5,16 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-versions: ["3.7", "3.8", "3.9", "3.10"]
+    environment: development
+    # strategy:
+      # fail-fast: false
+      # matrix:
+      # python-versions: ["3.7", "3.8", "3.9", "3.10"]
 
    steps:
     - name: test
       run: |
-        set
-        NP_AGENT=${{ NP_AGENT}}
-        set
+        printenv NP_AGENT
       # - uses: actions/checkout@v2
       # - name: Set up Python ${{ matrix.python-version}}
       #   uses: actions/setup-python@v2
