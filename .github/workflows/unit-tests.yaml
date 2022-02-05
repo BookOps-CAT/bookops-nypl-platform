@@ -1,12 +1,11 @@
-name: bookops-nypl-platform unit tests
+name: bookops-nypl-platform-unit-tests
 on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     environment: development
-   steps:
-    - uses: actions/checkout@v2
-    - name: test
-      run: |
-        printenv NP_AGENT
+     steps:
+      - uses: actions/checkout@v2
+      - name: test
+        run: printenv NP_AGENT
 
