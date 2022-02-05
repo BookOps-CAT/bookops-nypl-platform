@@ -8,11 +8,8 @@ import datetime
 import os
 import pytest
 
-import requests
-
 from bookops_nypl_platform import __title__, __version__
 
-# from bookops_nypl_platform.authorize import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
 
