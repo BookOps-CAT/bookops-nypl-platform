@@ -8,11 +8,8 @@ import datetime
 import os
 import pytest
 
-import requests
-
 from bookops_nypl_platform import __title__, __version__
 
-# from bookops_nypl_platform.authorize import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
 
@@ -731,12 +728,12 @@ class TestPlatformSession:
 
 @pytest.mark.webtest
 class TestLivePlatform:
-    """ Runs rudimentary tests against live NYPL Platform endpoints"""
+    """Runs rudimentary tests against live NYPL Platform endpoints"""
 
     def test_get_bib(self, live_token, response_top_keys, bib_data_keys):
         """Tests get_bib method"""
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.get_bib(id=21790265)
 
@@ -752,8 +749,8 @@ class TestLivePlatform:
 
     def test_get_bib_list(self, live_token, response_top_keys, bib_data_keys):
 
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.get_bib_list(id=["b21790265a", "b21721339a"], limit=15)
 
@@ -767,8 +764,8 @@ class TestLivePlatform:
             assert sorted(response.json()["data"][0].keys()) == bib_data_keys
 
     def test_get_bib_items(self, live_token, response_top_keys, bib_items_keys):
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.get_bib_items(id="b21790265a")
 
@@ -782,8 +779,8 @@ class TestLivePlatform:
             assert sorted(response.json()["data"][0].keys()) == bib_items_keys
 
     def test_get_item_list(self, live_token, response_top_keys):
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.get_item_list(id="i372231731")
 
@@ -795,8 +792,8 @@ class TestLivePlatform:
             assert sorted(response.json().keys()) == response_top_keys
 
     def test_check_bib_is_research(self, live_token):
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.check_bib_is_research(id="b21790265a")
 
@@ -810,8 +807,8 @@ class TestLivePlatform:
             )
 
     def test_search_standardNos(self, live_token):
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.search_standardNos(
                 keywords=["9780316230032", "0674976002"], limit=12
@@ -824,8 +821,8 @@ class TestLivePlatform:
             )
 
     def test_search_controlNos(self, live_token):
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.search_controlNos(
                 keywords=["1089804986", "1006480637"], limit=1, offset=1
@@ -837,8 +834,8 @@ class TestLivePlatform:
         )
 
     def test_search_bibNos(self, live_token):
-        agent = os.getenv("NPagent")
-        agent = f"{agent}/testing"
+        agent = os.getenv("NP_AGENT")
+        agent = f"{agent}"
         with PlatformSession(authorization=live_token, agent=agent) as session:
             response = session.search_bibNos(
                 keywords=[21790265, 21721339], limit=1, offset=1

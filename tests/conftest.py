@@ -132,24 +132,23 @@ def live_keys():
         fh = os.path.join(os.environ["USERPROFILE"], ".platform/tomasz_platform.json")
         with open(fh, "r") as file:
             data = json.load(file)
-            os.environ["NPclient_id"] = data["client-id"]
-            os.environ["NPclient_secret"] = data["client-secret"]
-            os.environ["NPoauth_server"] = data["oauth-server"]
-            os.environ["NPagent"] = data["agent"]
+            os.environ["NP_CLIENT_ID"] = data["client-id"]
+            os.environ["NP_CLIENT_SECRET"] = data["client-secret"]
+            os.environ["NP_OAUTH_SERVER"] = data["oauth-server"]
+            os.environ["NP_AGENT"] = data["agent"]
 
     else:
-        # Travis env variables defined in the repository settings
+        # Github Actions env variables defined in the repository settings
         pass
 
 
 @pytest.fixture
 def live_token(live_keys):
-    agent = os.getenv("NPagent")
     token = PlatformToken(
-        client_id=os.getenv("NPclient_id"),
-        client_secret=os.getenv("NPclient_secret"),
-        oauth_server=os.getenv("NPoauth_server"),
-        agent=f"{agent}/testing",
+        client_id=os.getenv("NP_CLIENT_ID"),
+        client_secret=os.getenv("NP_CLIENT_SECRET"),
+        oauth_server=os.getenv("NP_OAUTH_SERVER"),
+        agent=os.getenv("NP_AGENT"),
     )
     return token
 

@@ -173,12 +173,12 @@ class TestLiveAuthentication:
     """Runs access token request against live authentication server"""
 
     def test_access_token(self, live_keys):
-        agent = os.getenv("NPagent")
+        agent = os.getenv("NP_AGENT")
         token = PlatformToken(
-            client_id=os.getenv("NPclient_id"),
-            client_secret=os.getenv("NPclient_secret"),
-            oauth_server=os.getenv("NPoauth_server"),
-            agent=f"{agent}/testing",
+            client_id=os.getenv("NP_CLIENT_ID"),
+            client_secret=os.getenv("NP_CLIENT_SECRET"),
+            oauth_server=os.getenv("NP_OAUTH_SERVER"),
+            agent=f"{agent}",
         )
 
         assert token.server_response.status_code == 200
