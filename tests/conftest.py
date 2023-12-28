@@ -129,7 +129,9 @@ def mock_datetime_now(monkeypatch):
 @pytest.fixture
 def live_keys():
     if os.name == "nt":
-        fh = os.path.join(os.environ["USERPROFILE"], ".platform/tomasz_platform.json")
+        fh = os.path.join(
+            os.environ["USERPROFILE"], ".cred/.platform/tomasz_platform.json"
+        )
         with open(fh, "r") as file:
             data = json.load(file)
             os.environ["NP_CLIENT_ID"] = data["client-id"]

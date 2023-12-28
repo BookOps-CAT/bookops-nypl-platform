@@ -11,7 +11,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 ## Version
 
-> 0.3.0
+> 0.4.0
 
 ## Installation
 
@@ -90,6 +90,22 @@ with PlatformSession(authorization=token) as session:
 
 ## Changelog
 
+### [0.4.0] - 2023-12-28
+
+#### Changed
+  + `conftest.py` updated path to credentials
+  + dependencies:
+    + certifi (2023.11.17)
+    + requests (2.31.0)
+  + dev dependencies:
+    + black (22.12.0)
+    + mike (0.5.5)
+    + mkapi (1.0.14)
+    + mkdocs (1.5.3)
+    + pytest (6.2.5)
+    + pytest-cov (2.12.1)
+    + pytest-mock (3.11.1)
+
 ### [0.3.0] - 2022-02-05
 
 #### Changed
@@ -118,6 +134,7 @@ with PlatformSession(authorization=token) as session:
 + [NYPL Platform API Documentation](https://docs.google.com/document/d/1p3q9OT9latXqON20WDh4CNPxIShUunfGgqT163r-Caw/edit?usp=sharing)
 + [ruby-nypl-platfom-api-client](https://github.com/NYPL/ruby-nypl-platform-api-client)
 
+[0.4.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.1.0...v0.2.0
