@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bookops-nypl-platform"
-version = "0.3.0"
+version = "0.4.0"
 description = "BookOps Python wrapper around NYPL Platform API"
 license = "MIT"
 authors = ["Tomasz Kalata <klingaroo@gmail.com>"]
@@ -14,13 +14,13 @@ python = "^3.7"
 requests = "^2.24.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1.1"
-pytest-mock = "^3.3.1"
-pytest-cov = "^2.10.1"
-mkdocs = "^1.1.2"
-mike = "^0.5.3"
-mkapi = "^1.0.13"
-black = "^22.1.0"
+pytest = "^6.2.5"
+pytest-mock = "^3.11.1"
+pytest-cov = "^2.12.1"
+mkdocs = "^1.5.3"
+mike = "^0.5.5"
+mkapi = "^1.0.14"
+black = "^22.12.0"
 
 [tool.black]
 line-length = 88
