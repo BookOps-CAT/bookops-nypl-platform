@@ -8,7 +8,7 @@ to NYPL Platform API
 """
 
 import sys
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 
@@ -41,10 +41,13 @@ class PlatformSession(requests.Session):
 
     def __init__(
         self,
-        authorization: Type[PlatformToken],
+        authorization: PlatformToken,
         target: str = "prod",
-        agent: str = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float]] = None,
+        agent: Optional[str] = None,
+        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
+            3,
+            3,
+        ),
     ):
         requests.Session.__init__(self)
 
@@ -189,7 +192,7 @@ class PlatformSession(requests.Session):
 
     def get_bib(
         self, id: Union[str, int], nyplSource: str = "sierra-nypl", hooks=None
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Requests a specific resource using its id number.
 
@@ -243,7 +246,7 @@ class PlatformSession(requests.Session):
         limit: int = 10,
         offset: int = 0,
         hooks: Dict = None,
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Retrieve multiple bib resources using a variety of indexes, for example:
         Sierra bib #s, standard numbers & control numbers
@@ -315,7 +318,7 @@ class PlatformSession(requests.Session):
 
     def get_bib_items(
         self, id: Union[str, int], nyplSource: str = "sierra-nypl", hooks: Dict = None
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Retrieves items linked to a specified bib
 
@@ -371,7 +374,7 @@ class PlatformSession(requests.Session):
         limit: int = 10,
         offset: int = 0,
         hooks: Dict = None,
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Retrieve multiple item resources using a variety of indexes, for example:
         Sierra item numbers, barcodes, bib number.
@@ -440,7 +443,7 @@ class PlatformSession(requests.Session):
 
     def check_bib_is_research(
         self, id: Union[str, int], nyplSource: str = "sierra-nypl", hooks: Dict = None
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Checks if bib is a reaserch libraries bib
 
@@ -490,7 +493,7 @@ class PlatformSession(requests.Session):
         limit: int = 10,
         offset: int = 0,
         hooks: Dict = None,
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Makes a request for bibs with matching standard numbers (ISBNs or UPCs) from the
         020 or 024 MARC tag.
@@ -549,7 +552,7 @@ class PlatformSession(requests.Session):
         limit: int = 10,
         offset: int = 0,
         hooks: Dict = None,
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Makes a request for bibs with matching control numbers from the 001 MARC tag.
 
@@ -606,7 +609,7 @@ class PlatformSession(requests.Session):
         limit: int = 10,
         offset: int = 0,
         hooks: Dict = None,
-    ) -> Type[requests.Response]:
+    ) -> requests.Response:
         """
         Makes a request for resources with matching Sierra bib numbers.
 
