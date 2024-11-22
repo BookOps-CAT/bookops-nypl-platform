@@ -17,3 +17,7 @@ def test_PlatfromToken_top_level_import():
 
 def test_PlatformSession_top_level_import():
     from bookops_nypl_platform import PlatformSession
+
+
+def test_BookopsPlatformError_top_level_import():
+    from bookops_nypl_platform import BookopsPlatformError
