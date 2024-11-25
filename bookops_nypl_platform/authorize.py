@@ -42,7 +42,7 @@ class PlatformToken:
         client_secret: str,
         oauth_server: str,
         agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float]] = (
+        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
             3,
             3,
         ),
@@ -160,4 +160,8 @@ class PlatformToken:
             return False
 
     def __repr__(self):
-        return f"<token: {self.token_str}, expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, server_response: {self.server_response.json()}>"
+        return (
+            f"<token: {self.token_str}, "
+            f"expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, "
+            f"server_response: {self.server_response.json()}>"
+        )
