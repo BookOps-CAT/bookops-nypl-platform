@@ -91,8 +91,53 @@ with PlatformSession(authorization=token) as session:
 ## Changelog
 
 ### [0.5.0] - 2024-11-25
+#### Added
+ + `.flake8` file to ignore line length and unused import errors in tests
+ + Python versions 3.11, 3.12, and 3.13 to GitHub Actions
+ + `BookopsPlatformError` as top level import
+ + `py.typed` file so applications using `bookops-nypl-platform` will use annotations from this package
+ + added type annotations where they were missing and fixed them where they were incomplete or inaccurate
+ + type annotations to variables in `PlatformSession` methods where needed
+ + Dev dependencies:
+   + `exceptiongroup` (1.2.2)
 
 #### Changed
+ + updated GitHub checkout and setup actions in automated tests (`unit-tests.yaml`)
+ + `if type() is` type check syntax changed to `isinstance` type checks
+ + target python version in `pyproject.toml` now 3.8-3.13
+ + Updated dependencies:
+   + `certifi` (2024.8.30)
+   + `charset-normalizer` (3.4.0)
+   + `idna` (3.10)
+   + `requests` (2.32.3)
+   + `urllib3` (2.2.3)
+ + Updated dev dependencies:
+   + `black` (24.8.0)
+   + `coverage` (7.6.1)
+   + `packaging` (24.2)
+   + `pathspec` (0.12.1)
+   + `platformdirs` (4.3.6)
+   + `pluggy` (1.5.0)
+   + `pytest-cov` (5.0.0)
+   + `pytest-mock` (3.14.0)
+   + `pytest` (8.3.3)
+   + `tomli` (2.1.0)
+   + `typing-extensions` (4.12.2)
+
+#### Fixed
+ + default value for `PlatformToken.timeout` and `PlatformSession.timeout` is now `(3,3,)`. Removed conditional check from `__init__.py` for both classes that set the `timeout` value if `timeout` was `None`
+ + typo in docstring of `authorize.py`
+ + changed names of variables in `PlatformSession` methods where they were the same as names of a param passed to that method. Certain variables have different types than the params with the same name which caused errors with the type checker. See `keywords` param/variable in `PlatformToken.search_standardNos` and `keyword`/`standardNos` variable
+
+#### Removed
+ + support for Python 3.7
+ + `Type` no longer used in type annotations 
+ + implicit optional types changed to explicit `Optional` with `None` as default value
+ + Dev dependencies:
+   + `mike`
+   + `mkdocs`
+   + `mkapi`
+ + `pytest.ini` file. Moved to `pytest.ini_options` in `pyproject.toml`
 
 
 ### [0.4.0] - 2023-12-28
