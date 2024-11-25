@@ -3,7 +3,7 @@
 # bookops-nypl-platform client
 BookOps Python wrapper around NYPL Platform API
 
-Requries Python 3.7 & up.
+Requries Python 3.8 & up.
 
 
 bookops-nypl-platform client provides a Python interface for the internal NYPL Platform API.
@@ -11,7 +11,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 ## Version
 
-> 0.4.0
+> 0.5.0
 
 ## Installation
 
@@ -89,6 +89,11 @@ with PlatformSession(authorization=token) as session:
 ```
 
 ## Changelog
+
+### [0.5.0] - 2024-11-25
+
+#### Changed
+
 
 ### [0.4.0] - 2023-12-28
 
