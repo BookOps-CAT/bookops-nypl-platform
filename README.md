@@ -184,6 +184,7 @@ with PlatformSession(authorization=token) as session:
 + [NYPL Platform API Documentation](https://docs.google.com/document/d/1p3q9OT9latXqON20WDh4CNPxIShUunfGgqT163r-Caw/edit?usp=sharing)
 + [ruby-nypl-platfom-api-client](https://github.com/NYPL/ruby-nypl-platform-api-client)
 
+[0.5.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.2.0...v0.2.1
