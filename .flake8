@@ -1,4 +1,4 @@
 [flake8]
 per-file-ignores =
     tests/*:E501
-    tests/*:F401
+    tests/test_bookops_nypl_platform.py:F401
