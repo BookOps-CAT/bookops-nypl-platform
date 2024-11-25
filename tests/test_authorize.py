@@ -164,7 +164,7 @@ class TestPlatformToken:
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert (
             str(token)
-            == f"<token: token_string_here, expires_on: 2019-01-01 17:59:59, server_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
+            == "<token: token_string_here, expires_on: 2019-01-01 17:59:59, server_response: {{'access_token': 'token_string_here', 'expires_in': 3600, 'token_type': 'Bearer', 'scope': 'scopes_here', 'id_token': 'token_string_here'}}>"
         )
 
 
