@@ -54,7 +54,8 @@ class PlatformSession(requests.Session):
         self.authorization = authorization
         if not isinstance(self.authorization, PlatformToken):
             raise BookopsPlatformError(
-                "Invalid authorization. Argument must be an instance of `PlatformToken` obj."
+                "Invalid authorization. Argument must be an instance of "
+                "`PlatformToken` obj."
             )
 
         # determine base url
