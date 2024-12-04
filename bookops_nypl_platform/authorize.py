@@ -8,7 +8,7 @@ by obtaining an access token used for authorization.
 """
 import datetime
 import sys
-from typing import Dict, Union, Tuple, Type
+from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 
@@ -23,9 +23,9 @@ class PlatformToken:
     Supports only client_credential flow.
 
     Args:
-        client_id:         client id
-        client_secret:         client secret
-        oauth_server:    NYPL OAuth Server
+        client_id:      client id
+        client_secret:  client secret
+        oauth_server:   NYPL OAuth Server
         agent:          "User-Agent" parameter to be passed in the request
                         header
         timeout:        how long to wait for server to respond before
@@ -41,10 +41,13 @@ class PlatformToken:
         client_id: str,
         client_secret: str,
         oauth_server: str,
-        agent: str = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float]] = None,
+        agent: Optional[str] = None,
+        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
+            3,
+            3,
+        ),
     ):
-        """Constructior"""
+        """Constructor"""
 
         for value in (client_id, client_secret, oauth_server):
             if not value:
@@ -55,16 +58,12 @@ class PlatformToken:
         self.server_response = None
         self.auth = (client_id, client_secret)
         self.oauth_server = oauth_server
+        self.timeout = timeout
 
         if agent is None:
             self.agent = f"{__title__}/{__version__}"
         else:
             self.agent = agent
-
-        if timeout is None:
-            self.timeout = (3, 3)
-        else:
-            self.timeout = timeout
 
         # make access token request
         self._get_token()
@@ -72,7 +71,7 @@ class PlatformToken:
     def _token_url(self) -> str:
         return f"{self.oauth_server}/oauth/token"
 
-    def _parse_access_token_string(self, server_response: Dict) -> str:
+    def _parse_access_token_string(self, server_response: Dict[str, Any]) -> str:
         """
         Parsers access token string from auth_server response
 
@@ -90,8 +89,8 @@ class PlatformToken:
             )
 
     def _calculate_expiration_time(
-        self, server_response: Dict
-    ) -> Type[datetime.datetime]:
+        self, server_response: Dict[str, Any]
+    ) -> datetime.datetime:
         """
         Calculates access token expiration time based on it's life lenght
         indicated in oauth_server response
@@ -161,4 +160,8 @@ class PlatformToken:
             return False
 
     def __repr__(self):
-        return f"<token: {self.token_str}, expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, server_response: {self.server_response.json()}>"
+        return (
+            f"<token: {self.token_str}, "
+            f"expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, "
+            f"server_response: {self.server_response.json()}>"
+        )
