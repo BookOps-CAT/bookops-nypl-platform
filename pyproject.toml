@@ -3,7 +3,7 @@ name = "bookops-nypl-platform"
 version = "0.5.0"
 description = "BookOps Python wrapper around NYPL Platform API"
 license = "MIT"
-authors = ["Tomasz Kalata <klingaroo@gmail.com>", "Charlotte Kostelic <charlottekostelic@gmail.com>"]
+authors = ["Tomasz Kalata <klingaroo@gmail.com>", "Charlotte Kostelic <charlottekostelic@bookops.org>"]
 exclude = ["bookops_nypl_platform/temp.py", "bookops_nypl_platform/temp/*"]
 readme = "README.md"
 
