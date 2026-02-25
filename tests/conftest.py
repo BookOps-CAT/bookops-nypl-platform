@@ -155,9 +155,6 @@ def live_token(live_keys):
     return token
 
 
-@pytest.fixture
-def response_top_keys():
-    return sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
 
 
 @pytest.fixture
