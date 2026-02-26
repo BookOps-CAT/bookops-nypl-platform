@@ -20,8 +20,10 @@ markers = ["webtest: mark a test hitting live endpoints"]
 addopts = '-m "not webtest" --cov=bookops_nypl_platform/'
 
 [tool.coverage.run]
+branch = true
 relative_files = true
 source = ["."]
+omit = ["tests/*"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
