@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.authorize
 ===============================
 This module provides method to authenicate subsequent requests to NYPL Platform
 by obtaining an access token used for authorization.
 """
+
 import datetime
 import sys
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import requests
-
 
 from . import __title__, __version__
 from .errors import BookopsPlatformError
@@ -42,7 +40,7 @@ class PlatformToken:
         client_secret: str,
         oauth_server: str,
         agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
+        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (
             3,
             3,
         ),
@@ -71,7 +69,7 @@ class PlatformToken:
     def _token_url(self) -> str:
         return f"{self.oauth_server}/oauth/token"
 
-    def _parse_access_token_string(self, server_response: Dict[str, Any]) -> str:
+    def _parse_access_token_string(self, server_response: dict[str, Any]) -> str:
         """
         Parsers access token string from auth_server response
 
@@ -89,7 +87,7 @@ class PlatformToken:
             )
 
     def _calculate_expiration_time(
-        self, server_response: Dict[str, Any]
+        self, server_response: dict[str, Any]
     ) -> datetime.datetime:
         """
         Calculates access token expiration time based on it's life lenght
