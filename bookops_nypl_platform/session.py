@@ -495,7 +495,7 @@ class PlatformSession(requests.Session):
 
     def get_hold_requests(
         self,
-        patron: str,
+        patron: Optional[str] = None,
         record: Optional[str] = None,
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
@@ -520,9 +520,13 @@ class PlatformSession(requests.Session):
         if self.authorization.is_expired():
             self._fetch_new_token()
 
-        payload = {"patron": patron}
+        payload = {}
         if record:
             payload["record"] = record
+        if patron:
+            payload["patron"] = patron
+        if not payload:
+            raise ValueError("Request must contain record ID and/or patron ID.")
         # send request
         try:
             response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
@@ -562,62 +566,6 @@ class PlatformSession(requests.Session):
             return response
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             raise BookopsPlatformError(f"Connection error: {sys.exc_info()}")
-        except BookopsPlatformError:
-            raise
-        except Exception:
-            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
-
-    def post_hold_request(
-        self,
-        patron: str,
-        pickupLocation: str,
-        record: Union[str, int],
-        recordType: str,
-        nyplSource: str = "sierra-nypl",
-        hooks: Optional[dict[str, Callable]] = None,
-    ) -> requests.Response:
-        """
-        Create a new hold request.
-
-        Args:
-            patron:
-                sierra patron ID
-            pickupLocation:
-                location where hold should be delivered
-            record:
-                ID for record where hold should be placed
-            recordType:
-                type of record that hold will be placed on
-            nyplSource:
-                data source; default 'sierra-nypl'; required
-            hooks:
-                Requests library hook system that can be used for signal event
-                handling, see more at:
-                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
-
-        Returns:
-            `requests.Response` object
-        """
-        url = self._get_hold_requests_url()
-        payload: dict[str, Any] = {
-            "patron": patron,
-            "nyplSource": nyplSource,
-            "requestType": "hold",
-            "recordType": recordType,
-            "record": record,
-            "pickupLocation": pickupLocation,
-        }
-
-        # check if token expired and request new one if needed
-        if self.authorization.is_expired():
-            self._fetch_new_token()
-
-        # send request
-        try:
-            response = self.post(url, json=payload, timeout=self.timeout, hooks=hooks)
-            return response
-        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
         except BookopsPlatformError:
             raise
         except Exception:

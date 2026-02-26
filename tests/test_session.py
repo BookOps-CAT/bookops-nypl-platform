@@ -576,6 +576,14 @@ class TestPlatformSession:
             response = session.get_hold_requests(patron="12345")
             assert response.status_code == 200
 
+    def test_get_hold_requests_without_params(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(ValueError) as exc:
+                session.get_hold_requests()
+            assert str(exc.value) == "Request must contain record ID and/or patron ID."
+
     def test_get_hold_requests_with_stale_token(
         self, mock_token, mock_successful_session_get_response
     ):
@@ -653,57 +661,6 @@ class TestPlatformSession:
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_hold_requests_by_id(id="12345")
-
-    def test_post_hold_request(self, mock_token, mock_successful_session_get_response):
-        with PlatformSession(authorization=mock_token) as session:
-            response = session.post_hold_request(
-                patron="12345", pickupLocation="foo", record="98765", recordType="i"
-            )
-            assert response.status_code == 200
-
-    def test_post_hold_request_with_stale_token(
-        self, mock_token, mock_successful_session_get_response
-    ):
-        mock_token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
-        with PlatformSession(authorization=mock_token) as session:
-            assert session.authorization.is_expired() is True
-            response = session.post_hold_request(
-                patron="12345", pickupLocation="foo", record="98765", recordType="i"
-            )
-            assert response.status_code == 200
-            assert session.authorization.is_expired() is False
-
-    def test_post_hold_request_platform_error(self, mock_token, mock_platform_error):
-        with PlatformSession(authorization=mock_token) as session:
-            with pytest.raises(BookopsPlatformError):
-                session.post_hold_request(
-                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
-                )
-
-    def test_post_hold_request_timeout_exception(self, mock_token, mock_timeout):
-        with PlatformSession(authorization=mock_token) as session:
-            with pytest.raises(BookopsPlatformError):
-                session.post_hold_request(
-                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
-                )
-
-    def test_post_hold_request_connection_exception(
-        self, mock_token, mock_connection_error
-    ):
-        with PlatformSession(authorization=mock_token) as session:
-            with pytest.raises(BookopsPlatformError):
-                session.post_hold_request(
-                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
-                )
-
-    def test_post_hold_request_unexpected_exception(
-        self, mock_token, mock_unexpected_error
-    ):
-        with PlatformSession(authorization=mock_token) as session:
-            with pytest.raises(BookopsPlatformError):
-                session.post_hold_request(
-                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
-                )
 
     @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_standardNos_argument_errors(self, mock_token, arg):
@@ -879,11 +836,11 @@ class TestPlatformSession:
 class TestLivePlatform:
     """Runs rudimentary tests against live NYPL Platform endpoints"""
 
+    AGENT = f"{os.getenv('NP_AGENT')}"
+
     def test_get_bib(self, live_token, bib_data_keys):
         """Tests get_bib method"""
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_bib(id=21790265)
 
             assert response.status_code == 200
@@ -891,7 +848,7 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265"
             )
-            assert response.request.headers["User-Agent"] == agent
+            assert response.request.headers["User-Agent"] == self.AGENT
             assert response.request.headers["Accept"] == "application/json"
             assert sorted(response.json().keys()) == sorted(
                 ["data", "count", "statusCode"]
@@ -899,10 +856,7 @@ class TestLivePlatform:
             assert sorted(response.json()["data"].keys()) == bib_data_keys
 
     def test_get_bib_list(self, live_token, bib_data_keys):
-
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_bib_list(id=["b21790265a", "b21721339a"], limit=15)
 
             assert response.status_code == 200
@@ -917,9 +871,7 @@ class TestLivePlatform:
             assert sorted(response.json()["data"][0].keys()) == bib_data_keys
 
     def test_get_bib_items(self, live_token, bib_items_keys):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_bib_items(id="b21790265a")
 
             assert response.status_code == 200
@@ -934,9 +886,7 @@ class TestLivePlatform:
             assert sorted(response.json()["data"][0].keys()) == bib_items_keys
 
     def test_get_item_list(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_item_list(id="i372231731")
 
             assert response.status_code == 200
@@ -949,10 +899,8 @@ class TestLivePlatform:
             )
 
     def test_check_bib_is_research(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
-            response = session.check_bib_is_research(id="b21790265a")
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
+            response = session.check_bib_is_research(id="21790265a")
 
             assert response.status_code == 200
             assert (
@@ -963,10 +911,18 @@ class TestLivePlatform:
                 ["nyplSource", "id", "isResearch"]
             )
 
+    def test_get_hold_requests(self, live_token, patron_account):
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
+            response = session.get_hold_requests(patron=os.environ["PATRON_ID"])
+            json_response = response.json()
+            assert response.status_code == 200
+            assert json_response is not None
+            assert sorted(list(json_response.keys())) == sorted(
+                ["data", "count", "statusCode", "debugInfo"]
+            )
+
     def test_search_standardNos(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.search_standardNos(
                 keywords=["9780316230032", "0674976002"], limit=12
             )
@@ -978,9 +934,7 @@ class TestLivePlatform:
             )
 
     def test_search_controlNos(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.search_controlNos(
                 keywords=["1089804986", "1006480637"], limit=1, offset=1
             )
@@ -991,9 +945,7 @@ class TestLivePlatform:
         )
 
     def test_search_bibNos(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.search_bibNos(
                 keywords=[21790265, 21721339], limit=1, offset=1
             )
