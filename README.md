@@ -92,9 +92,13 @@ with PlatformSession(authorization=token) as session:
 ### [0.6.0] - 2026-02-26
 #### Added
  + `get_hold_requests` and `get_hold_requests_by_id` methods to retrieve hold request data from platform API
+ + added `types-requests` as a dependency
 #### Changed
+ + updated `pyproject.toml` formatting to support poetry 2
+ + fixed typos
 #### Removed
-
+ + support for python 3.8
+ + unnecessary magic lines and type imports
 
 ### [0.5.0] - 2024-11-25
 #### Added
