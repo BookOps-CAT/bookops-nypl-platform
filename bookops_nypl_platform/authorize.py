@@ -40,10 +40,7 @@ class PlatformToken:
         client_secret: str,
         oauth_server: str,
         agent: Optional[str] = None,
-        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (
-            3,
-            3,
-        ),
+        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (3, 3),
     ):
         """Constructor"""
 

@@ -174,8 +174,7 @@ class TestPlatformSession:
             assert session._prep_sierra_number(arg) == expectation
 
     @pytest.mark.parametrize(
-        "arg",
-        [12345, 1234567890, "12345", "bl1234567", "a12345678"],
+        "arg", [12345, 1234567890, "12345", "bl1234567", "a12345678"]
     )
     def test_prep_sierra_number_exceptions(self, mock_token, arg):
         err_msg = "Invalid Sierra number passed."
@@ -273,8 +272,7 @@ class TestPlatformSession:
                 session.get_bib("12345678")
 
     @pytest.mark.parametrize(
-        "id_arg,sn_arg,cn_arg",
-        [(None, None, None), ("", "", ""), ([], [], [])],
+        "id_arg,sn_arg,cn_arg", [(None, None, None), ("", "", ""), ([], [], [])]
     )
     def test_get_bib_list_arguments_errors(self, mock_token, id_arg, sn_arg, cn_arg):
         err_msg = "Missing required positional argument."
@@ -409,8 +407,7 @@ class TestPlatformSession:
                 session.get_bib_items("12345678")
 
     @pytest.mark.parametrize(
-        "id_arg,ba_arg,bi_arg",
-        [(None, None, None), ("", "", ""), ([], [], [])],
+        "id_arg,ba_arg,bi_arg", [(None, None, None), ("", "", ""), ([], [], [])]
     )
     def test_get_item_list_arguments_errors(self, mock_token, id_arg, ba_arg, bi_arg):
         err_msg = "Missing required positional argument."
@@ -548,10 +545,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.check_bib_is_research("12345678")
 
-    @pytest.mark.parametrize(
-        "arg",
-        ["", [], None],
-    )
+    @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_standardNos_argument_errors(self, mock_token, arg):
         err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
@@ -605,10 +599,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.search_standardNos(keywords="12345678")
 
-    @pytest.mark.parametrize(
-        "arg",
-        ["", [], None],
-    )
+    @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_controlNos_argument_errors(self, mock_token, arg):
         err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
@@ -662,10 +653,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.search_controlNos(keywords="12345678")
 
-    @pytest.mark.parametrize(
-        "arg",
-        ["", [], None],
-    )
+    @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_bibNos_argument_missing(self, mock_token, arg):
         err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
