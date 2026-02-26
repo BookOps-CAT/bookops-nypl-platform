@@ -103,6 +103,12 @@ class PlatformSession(requests.Session):
     def _get_bib_items_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}/items"
 
+    def _get_hold_requests_url(self) -> str:
+        return f"{self.base_url}/hold-requests"
+
+    def _get_hold_requests_by_id_url(self, id: Union[str, int]) -> str:
+        return f"{self.base_url}/hold-requests/{id}"
+
     def _get_item_list_url(self) -> str:
         return f"{self.base_url}/items"
 
@@ -160,7 +166,7 @@ class PlatformSession(requests.Session):
 
     def _prep_sierra_numbers(self, sids: str) -> str:
         """
-        Verifies or converts passed Sierra bib numbers into a comma separated string.
+        Verifies or converts Sierra bib numbers into a comma separated string.
 
         Args:
             sids:           a comma separated string of Sierra bib numbers
@@ -479,6 +485,136 @@ class PlatformSession(requests.Session):
         # send request
         try:
             response = self.get(url, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def get_hold_requests(
+        self,
+        patron: str,
+        record: Optional[str] = None,
+        hooks: Optional[dict[str, Callable]] = None,
+    ) -> requests.Response:
+        """
+        Get hold requests for a patron.
+
+        Args:
+            patron:
+                sierra patron ID
+            nyplSource:
+                data source; default 'sierra-nypl'; required
+            hooks:
+                Requests library hook system that can be used for signal event
+                handling, see more at:
+                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+        url = self._get_hold_requests_url()
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        payload = {"patron": patron}
+        if record:
+            payload["record"] = record
+        # send request
+        try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def get_hold_requests_by_id(
+        self, id: str, hooks: Optional[dict[str, Callable]] = None
+    ) -> requests.Response:
+        """
+        Get hold request record by hold request ID.
+
+        Args:
+            id:
+                hold request ID
+            hooks:
+                Requests library hook system that can be used for signal event
+                handling, see more at:
+                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+        url = self._get_hold_requests_by_id_url(id=id)
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def post_hold_request(
+        self,
+        patron: str,
+        pickupLocation: str,
+        record: Union[str, int],
+        recordType: str,
+        nyplSource: str = "sierra-nypl",
+        hooks: Optional[dict[str, Callable]] = None,
+    ) -> requests.Response:
+        """
+        Create a new hold request.
+
+        Args:
+            patron:
+                sierra patron ID
+            pickupLocation:
+                location where hold should be delivered
+            record:
+                ID for record where hold should be placed
+            recordType:
+                type of record that hold will be placed on
+            nyplSource:
+                data source; default 'sierra-nypl'; required
+            hooks:
+                Requests library hook system that can be used for signal event
+                handling, see more at:
+                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+        url = self._get_hold_requests_url()
+        payload: dict[str, Any] = {
+            "patron": patron,
+            "nyplSource": nyplSource,
+            "requestType": "hold",
+            "recordType": recordType,
+            "record": record,
+            "pickupLocation": pickupLocation,
+        }
+
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.post(url, json=payload, timeout=self.timeout, hooks=hooks)
             return response
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             raise BookopsPlatformError(f"Connection error: {sys.exc_info()[0]}")

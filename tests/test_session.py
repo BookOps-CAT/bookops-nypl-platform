@@ -123,11 +123,26 @@ class TestPlatformSession:
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/items"
             )
 
-    def test_get_bib_is_research(self, mock_token):
+    def test_check_bib_is_research_url(self, mock_token):
         with PlatformSession(authorization=mock_token) as session:
             assert (
                 session._check_bib_is_research_url("1234567", "sierra-nypl")
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/is-research"
+            )
+
+    def test_get_hold_requests_url(self, mock_token):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._get_hold_requests_url()
+                == "https://platform.nypl.org/api/v0.1/hold-requests"
+            )
+
+    @pytest.mark.parametrize("id", ["12345", 12345])
+    def test_get_hold_requests_by_id_url(self, mock_token, id):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._get_hold_requests_by_id_url(id=id)
+                == "https://platform.nypl.org/api/v0.1/hold-requests/12345"
             )
 
     def test_get_item_list_url(self, mock_token):
@@ -548,6 +563,147 @@ class TestPlatformSession:
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.check_bib_is_research("12345678")
+
+    def test_get_hold_requests(self, mock_token, mock_successful_session_get_response):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_hold_requests(patron="12345", record="98765")
+            assert response.status_code == 200
+
+    def test_get_hold_requests_without_record(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_hold_requests(patron="12345")
+            assert response.status_code == 200
+
+    def test_get_hold_requests_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        mock_token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is True
+            response = session.get_hold_requests(patron="12345", record=98765)
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_get_hold_requests_platform_error(self, mock_token, mock_platform_error):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    def test_get_hold_requests_timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    def test_get_hold_requests_connection_exception(
+        self, mock_token, mock_connection_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    def test_get_hold_requests_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    @pytest.mark.parametrize("id", ["12345", 12345])
+    def test_get_hold_requests_by_id(
+        self, mock_token, mock_successful_session_get_response, id
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_hold_requests_by_id(id=id)
+            assert response.status_code == 200
+
+    def test_get_hold_requests_by_id_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        mock_token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is True
+            response = session.get_hold_requests_by_id(id="12345")
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_get_hold_requests_by_id_platform_error(
+        self, mock_token, mock_platform_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_get_hold_requests_by_id_timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_get_hold_requests_by_id_connection_exception(
+        self, mock_token, mock_connection_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_get_hold_requests_by_id_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_post_hold_request(self, mock_token, mock_successful_session_get_response):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.post_hold_request(
+                patron="12345", pickupLocation="foo", record="98765", recordType="i"
+            )
+            assert response.status_code == 200
+
+    def test_post_hold_request_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        mock_token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is True
+            response = session.post_hold_request(
+                patron="12345", pickupLocation="foo", record="98765", recordType="i"
+            )
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_post_hold_request_platform_error(self, mock_token, mock_platform_error):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.post_hold_request(
+                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
+                )
+
+    def test_post_hold_request_timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.post_hold_request(
+                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
+                )
+
+    def test_post_hold_request_connection_exception(
+        self, mock_token, mock_connection_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.post_hold_request(
+                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
+                )
+
+    def test_post_hold_request_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.post_hold_request(
+                    patron="12345", pickupLocation="foo", record="98765", recordType="i"
+                )
 
     @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_standardNos_argument_errors(self, mock_token, arg):
