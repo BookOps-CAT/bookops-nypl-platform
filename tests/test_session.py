@@ -123,7 +123,7 @@ class TestPlatformSession:
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/items"
             )
 
-    def test_get_bib_is_reasearch(self, mock_token):
+    def test_get_bib_is_research(self, mock_token):
         with PlatformSession(authorization=mock_token) as session:
             assert (
                 session._check_bib_is_research_url("1234567", "sierra-nypl")
@@ -250,7 +250,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_bib_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -261,7 +261,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib("12345678")
 
-    def test_get_bib_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_bib_Connection_exception(self, mock_token, mock_connection_error):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib("12345678")
@@ -317,7 +317,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_bib_list_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -328,7 +328,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_list(id="12345678")
 
-    def test_get_bib_list_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_bib_list_Connection_exception(self, mock_token, mock_connection_error):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_list(id="12345678")
@@ -383,18 +383,20 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_bib_items_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_items("12345678")
 
-    def test_get_bib_itmes_Timeout_exception(self, mock_token, mock_timeout):
+    def test_get_bib_items_Timeout_exception(self, mock_token, mock_timeout):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_items("12345678")
 
-    def test_get_bib_items_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_bib_items_Connection_exception(
+        self, mock_token, mock_connection_error
+    ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_items("12345678")
@@ -452,7 +454,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_item_list_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -463,7 +465,9 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.get_item_list(id="i304400737")
 
-    def test_get_item_list_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_item_list_Connection_exception(
+        self, mock_token, mock_connection_error
+    ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_item_list(id="i304400737")
@@ -499,7 +503,7 @@ class TestPlatformSession:
                 session.check_bib_is_research(arg_id, nyplSource=arg_src)
             assert err_msg in str(exc.value)
 
-    def test_check_bib_is_research_with_invald_id(self, mock_token):
+    def test_check_bib_is_research_with_invalid_id(self, mock_token):
         err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
@@ -520,7 +524,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_check_bib_is_research_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -532,7 +536,7 @@ class TestPlatformSession:
                 session.check_bib_is_research("12345678")
 
     def test_check_bib_is_research_Connection_exception(
-        self, mock_token, mock_connectionerror
+        self, mock_token, mock_connection_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -574,7 +578,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_search_standardNos_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -586,7 +590,7 @@ class TestPlatformSession:
                 session.search_standardNos(keywords="12345678")
 
     def test_search_standardNos_Connection_exception(
-        self, mock_token, mock_connectionerror
+        self, mock_token, mock_connection_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -628,7 +632,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_search_controlNos_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -640,7 +644,7 @@ class TestPlatformSession:
                 session.search_controlNos(keywords="12345678")
 
     def test_search_controlNos_Connection_exception(
-        self, mock_token, mock_connectionerror
+        self, mock_token, mock_connection_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -689,7 +693,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_search_bibNos_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -700,7 +704,9 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.search_bibNos(keywords="12345678")
 
-    def test_search_bibNos_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_search_bibNos_Connection_exception(
+        self, mock_token, mock_connection_error
+    ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.search_bibNos(keywords="12345678")

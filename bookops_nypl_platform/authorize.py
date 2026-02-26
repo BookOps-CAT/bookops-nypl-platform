@@ -1,7 +1,7 @@
 """
 bookops_nypl_platform.authorize
 ===============================
-This module provides method to authenicate subsequent requests to NYPL Platform
+This module provides method to authenticate subsequent requests to NYPL Platform
 by obtaining an access token used for authorization.
 """
 
@@ -87,11 +87,11 @@ class PlatformToken:
         self, server_response: dict[str, Any]
     ) -> datetime.datetime:
         """
-        Calculates access token expiration time based on it's life lenght
+        Calculates access token expiration time based on it's life length
         indicated in oauth_server response
 
         Args:
-            server_resopnse:    oauth_server response in dict format
+            server_response:    oauth_server response in dict format
 
         Returns:
             expires_on:         datetime object
@@ -128,14 +128,16 @@ class PlatformToken:
                 self.expires_on = self._calculate_expiration_time(response.json())
             else:
                 raise BookopsPlatformError(
-                    f"Invalid request. Oauth server retruned error: {response.json()}"
+                    f"Invalid request. Oauth server returned error: {response.json()}"
                 )
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             raise BookopsPlatformError(f"Trouble connecting: {sys.exc_info()[0]}")
         except BookopsPlatformError:
             raise
         except Exception:
-            raise BookopsPlatformError(f"Unexpected error occured: {sys.exc_info()[0]}")
+            raise BookopsPlatformError(
+                f"Unexpected error occurred: {sys.exc_info()[0]}"
+            )
 
     def is_expired(self):
         """

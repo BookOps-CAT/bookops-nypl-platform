@@ -108,13 +108,13 @@ def mock_timeout(monkeypatch):
 
 
 @pytest.fixture
-def mock_connectionerror(monkeypatch):
+def mock_connection_error(monkeypatch):
     monkeypatch.setattr("requests.post", MockConnectionError)
     monkeypatch.setattr("requests.Session.get", MockConnectionError)
 
 
 @pytest.fixture
-def mock_bookopsplatformerror(monkeypatch):
+def mock_platform_error(monkeypatch):
     monkeypatch.setattr("requests.Session.get", MockBookopsPlatformError)
 
 

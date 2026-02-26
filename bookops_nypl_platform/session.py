@@ -160,13 +160,13 @@ class PlatformSession(requests.Session):
 
     def _prep_sierra_numbers(self, sids: str) -> str:
         """
-        Verifies or conversts passed Sierra bib numbers into a comma separated string.
+        Verifies or converts passed Sierra bib numbers into a comma separated string.
 
         Args:
             sids:           a comma separated string of Sierra bib numbers
 
         Returns:
-            verified_nos:   a comma separated string of Sierrra bib numbers
+            verified_nos:   a comma separated string of Sierra bib numbers
         """
         verified_nos = []
 
@@ -446,7 +446,7 @@ class PlatformSession(requests.Session):
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Checks if bib is a reaserch libraries bib
+        Checks if bib is a research libraries bib
 
         Args:
             id:             resource id; for Sierra bibliographic
