@@ -91,6 +91,7 @@ with PlatformSession(authorization=token) as session:
 ## Changelog
 ### [0.6.0] - 2026-02-26
 #### Added
+ + `get_hold_requests` and `get_hold_requests_by_id` methods to retrieve hold request data from platform API
 #### Changed
 #### Removed
 
