@@ -132,9 +132,7 @@ def mock_datetime_now(monkeypatch):
 def live_keys():
     if not os.getenv("GITHUB_ACTIONS"):
         fh = os.path.join(
-            # os.environ["USERPROFILE"], ".cred/.platform/tomasz_platform.json"
-            os.environ["USERPROFILE"],
-            ".cred/.platform/charlotte_platform.json",
+            os.environ["USERPROFILE"], ".cred/.platform/tomasz_platform.json"
         )
         with open(fh, "r") as file:
             data = json.load(file)
@@ -142,21 +140,6 @@ def live_keys():
             os.environ["NP_CLIENT_SECRET"] = data["client-secret"]
             os.environ["NP_OAUTH_SERVER"] = data["oauth-server"]
             os.environ["NP_AGENT"] = data["agent"]
-
-
-@pytest.fixture(scope="package")
-def patron_account():
-    if not os.getenv("GITHUB_ACTIONS"):
-        fh = os.path.join(
-            os.environ["USERPROFILE"], ".cred/.sierra/bookops-library-card.json"
-        )
-        with open(fh, "r") as file:
-            data = json.load(file)
-            os.environ["BARCODE"] = data["barcode"]
-            os.environ["PIN"] = data["pin"]
-            os.environ["PATRON_ID"] = data["id"]
-            os.environ["TEST_ITEM_1"] = data["items"][0]["id"]
-            os.environ["TEST_ITEM_2"] = data["items"][1]["id"]
 
 
 @pytest.fixture(scope="module")

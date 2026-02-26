@@ -911,9 +911,9 @@ class TestLivePlatform:
                 ["nyplSource", "id", "isResearch"]
             )
 
-    def test_get_hold_requests(self, live_token, patron_account):
+    def test_get_hold_requests(self, live_token):
         with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
-            response = session.get_hold_requests(patron=os.environ["PATRON_ID"])
+            response = session.get_hold_requests(patron="3917246")
             json_response = response.json()
             assert response.status_code == 200
             assert json_response is not None
