@@ -43,7 +43,7 @@ class PlatformSession(requests.Session):
         target: str = "prod",
         agent: Optional[str] = None,
         timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (3, 3),
-    ):
+    ) -> None:
         requests.Session.__init__(self)
 
         self.authorization = authorization
@@ -83,7 +83,7 @@ class PlatformSession(requests.Session):
     def _check_bib_is_research_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}/is-research"
 
-    def _fetch_new_token(self):
+    def _fetch_new_token(self) -> None:
         """
         Requests new access token from the oauth server and updates
         session headers with new Authorization
@@ -182,7 +182,7 @@ class PlatformSession(requests.Session):
 
         return ",".join(verified_nos)
 
-    def _update_authorization(self):
+    def _update_authorization(self) -> None:
         """
         Updates Bearer token in PlatformSession headers
         """
