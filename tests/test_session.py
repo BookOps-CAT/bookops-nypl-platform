@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.session testing
 """
-from contextlib import contextmanager
+
 import datetime
 import os
+from contextlib import contextmanager
+
 import pytest
 
 from bookops_nypl_platform import __title__, __version__
-
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
 
@@ -124,11 +123,26 @@ class TestPlatformSession:
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/items"
             )
 
-    def test_get_bib_is_reasearch(self, mock_token):
+    def test_check_bib_is_research_url(self, mock_token):
         with PlatformSession(authorization=mock_token) as session:
             assert (
                 session._check_bib_is_research_url("1234567", "sierra-nypl")
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/1234567/is-research"
+            )
+
+    def test_get_hold_requests_url(self, mock_token):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._get_hold_requests_url()
+                == "https://platform.nypl.org/api/v0.1/hold-requests"
+            )
+
+    @pytest.mark.parametrize("id", ["12345", 12345])
+    def test_get_hold_requests_by_id_url(self, mock_token, id):
+        with PlatformSession(authorization=mock_token) as session:
+            assert (
+                session._get_hold_requests_by_id_url(id=id)
+                == "https://platform.nypl.org/api/v0.1/hold-requests/12345"
             )
 
     def test_get_item_list_url(self, mock_token):
@@ -175,8 +189,7 @@ class TestPlatformSession:
             assert session._prep_sierra_number(arg) == expectation
 
     @pytest.mark.parametrize(
-        "arg",
-        [12345, 1234567890, "12345", "bl1234567", "a12345678"],
+        "arg", [12345, 1234567890, "12345", "bl1234567", "a12345678"]
     )
     def test_prep_sierra_number_exceptions(self, mock_token, arg):
         err_msg = "Invalid Sierra number passed."
@@ -252,7 +265,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_bib_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -263,7 +276,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib("12345678")
 
-    def test_get_bib_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_bib_Connection_exception(self, mock_token, mock_connection_error):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib("12345678")
@@ -274,8 +287,7 @@ class TestPlatformSession:
                 session.get_bib("12345678")
 
     @pytest.mark.parametrize(
-        "id_arg,sn_arg,cn_arg",
-        [(None, None, None), ("", "", ""), ([], [], [])],
+        "id_arg,sn_arg,cn_arg", [(None, None, None), ("", "", ""), ([], [], [])]
     )
     def test_get_bib_list_arguments_errors(self, mock_token, id_arg, sn_arg, cn_arg):
         err_msg = "Missing required positional argument."
@@ -320,7 +332,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_bib_list_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -331,7 +343,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_list(id="12345678")
 
-    def test_get_bib_list_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_bib_list_Connection_exception(self, mock_token, mock_connection_error):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_list(id="12345678")
@@ -386,18 +398,20 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_bib_items_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_items("12345678")
 
-    def test_get_bib_itmes_Timeout_exception(self, mock_token, mock_timeout):
+    def test_get_bib_items_Timeout_exception(self, mock_token, mock_timeout):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_items("12345678")
 
-    def test_get_bib_items_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_bib_items_Connection_exception(
+        self, mock_token, mock_connection_error
+    ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_bib_items("12345678")
@@ -411,7 +425,28 @@ class TestPlatformSession:
 
     @pytest.mark.parametrize(
         "id_arg,ba_arg,bi_arg",
-        [(None, None, None), ("", "", ""), ([], [], [])],
+        [
+            ("12345678", None, None),
+            (["12345678", "23456789"], None, None),
+            (["12345678", 23456789], None, None),
+            (["i304400737,i304400750"], None, None),
+            (None, "33333834590594", None),
+            (None, 33333834590594, None),
+            (None, ["33333834590594", "333331234567890"], None),
+            (None, ["33333834590594", 333331234567890], None),
+            (None, [33333834590594, 333331234567890], None),
+            (None, None, "b198280646"),
+        ],
+    )
+    def test_get_item_list_success(
+        self, mock_token, id_arg, ba_arg, bi_arg, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_item_list(id_arg, ba_arg, bi_arg)
+            assert response.status_code == 200
+
+    @pytest.mark.parametrize(
+        "id_arg,ba_arg,bi_arg", [(None, None, None), ("", "", ""), ([], [], [])]
     )
     def test_get_item_list_arguments_errors(self, mock_token, id_arg, ba_arg, bi_arg):
         err_msg = "Missing required positional argument."
@@ -419,28 +454,6 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_item_list(id_arg, ba_arg, bi_arg)
             assert err_msg in str(exc.value)
-
-    @pytest.mark.parametrize(
-        "id_arg,ba_arg,bi_arg",
-        [
-            ("12345678", None, None),
-            (None, "33333834590594", None),
-            (None, None, "b198280646"),
-        ],
-    )
-    def test_get_item_list_correct_ids(
-        self, mock_token, id_arg, ba_arg, bi_arg, mock_successful_session_get_response
-    ):
-        with PlatformSession(authorization=mock_token) as session:
-            with does_not_raise():
-                session.get_item_list(id_arg, ba_arg, bi_arg)
-
-    def test_get_item_list_successful_request(
-        self, mock_token, mock_successful_session_get_response
-    ):
-        with PlatformSession(authorization=mock_token) as session:
-            response = session.get_item_list(id=["i304400737,i304400750"])
-            assert response.status_code == 200
 
     def test_get_item_list_with_stale_token(
         self, mock_token, mock_successful_session_get_response
@@ -456,7 +469,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_get_item_list_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -467,7 +480,9 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.get_item_list(id="i304400737")
 
-    def test_get_item_list_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_get_item_list_Connection_exception(
+        self, mock_token, mock_connection_error
+    ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.get_item_list(id="i304400737")
@@ -503,7 +518,7 @@ class TestPlatformSession:
                 session.check_bib_is_research(arg_id, nyplSource=arg_src)
             assert err_msg in str(exc.value)
 
-    def test_check_bib_is_research_with_invald_id(self, mock_token):
+    def test_check_bib_is_research_with_invalid_id(self, mock_token):
         err_msg = "Invalid Sierra number passed."
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError) as exc:
@@ -524,7 +539,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_check_bib_is_research_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -536,7 +551,7 @@ class TestPlatformSession:
                 session.check_bib_is_research("12345678")
 
     def test_check_bib_is_research_Connection_exception(
-        self, mock_token, mock_connectionerror
+        self, mock_token, mock_connection_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -549,10 +564,105 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.check_bib_is_research("12345678")
 
-    @pytest.mark.parametrize(
-        "arg",
-        ["", [], None],
-    )
+    def test_get_hold_requests(self, mock_token, mock_successful_session_get_response):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_hold_requests(patron="12345", record="98765")
+            assert response.status_code == 200
+
+    def test_get_hold_requests_without_record(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_hold_requests(patron="12345")
+            assert response.status_code == 200
+
+    def test_get_hold_requests_without_params(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(ValueError) as exc:
+                session.get_hold_requests()
+            assert str(exc.value) == "Request must contain record ID and/or patron ID."
+
+    def test_get_hold_requests_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        mock_token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is True
+            response = session.get_hold_requests(patron="12345", record=98765)
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_get_hold_requests_platform_error(self, mock_token, mock_platform_error):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    def test_get_hold_requests_timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    def test_get_hold_requests_connection_exception(
+        self, mock_token, mock_connection_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    def test_get_hold_requests_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests(patron="12345678")
+
+    @pytest.mark.parametrize("id", ["12345", 12345])
+    def test_get_hold_requests_by_id(
+        self, mock_token, mock_successful_session_get_response, id
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_hold_requests_by_id(id=id)
+            assert response.status_code == 200
+
+    def test_get_hold_requests_by_id_with_stale_token(
+        self, mock_token, mock_successful_session_get_response
+    ):
+        mock_token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        with PlatformSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is True
+            response = session.get_hold_requests_by_id(id="12345")
+            assert response.status_code == 200
+            assert session.authorization.is_expired() is False
+
+    def test_get_hold_requests_by_id_platform_error(
+        self, mock_token, mock_platform_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_get_hold_requests_by_id_timeout_exception(self, mock_token, mock_timeout):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_get_hold_requests_by_id_connection_exception(
+        self, mock_token, mock_connection_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    def test_get_hold_requests_by_id_unexpected_exception(
+        self, mock_token, mock_unexpected_error
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsPlatformError):
+                session.get_hold_requests_by_id(id="12345")
+
+    @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_standardNos_argument_errors(self, mock_token, arg):
         err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
@@ -581,7 +691,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_search_standardNos_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -593,7 +703,7 @@ class TestPlatformSession:
                 session.search_standardNos(keywords="12345678")
 
     def test_search_standardNos_Connection_exception(
-        self, mock_token, mock_connectionerror
+        self, mock_token, mock_connection_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -606,10 +716,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.search_standardNos(keywords="12345678")
 
-    @pytest.mark.parametrize(
-        "arg",
-        ["", [], None],
-    )
+    @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_controlNos_argument_errors(self, mock_token, arg):
         err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
@@ -638,7 +745,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_search_controlNos_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -650,7 +757,7 @@ class TestPlatformSession:
                 session.search_controlNos(keywords="12345678")
 
     def test_search_controlNos_Connection_exception(
-        self, mock_token, mock_connectionerror
+        self, mock_token, mock_connection_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -663,10 +770,7 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.search_controlNos(keywords="12345678")
 
-    @pytest.mark.parametrize(
-        "arg",
-        ["", [], None],
-    )
+    @pytest.mark.parametrize("arg", ["", [], None])
     def test_search_bibNos_argument_missing(self, mock_token, arg):
         err_msg = "Missing required positional argument `keywords`."
         with PlatformSession(authorization=mock_token) as session:
@@ -702,7 +806,7 @@ class TestPlatformSession:
             assert session.authorization.is_expired() is False
 
     def test_search_bibNos_BookopsPlatformError_exception(
-        self, mock_token, mock_bookopsplatformerror
+        self, mock_token, mock_platform_error
     ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
@@ -713,7 +817,9 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError):
                 session.search_bibNos(keywords="12345678")
 
-    def test_search_bibNos_Connection_exception(self, mock_token, mock_connectionerror):
+    def test_search_bibNos_Connection_exception(
+        self, mock_token, mock_connection_error
+    ):
         with PlatformSession(authorization=mock_token) as session:
             with pytest.raises(BookopsPlatformError):
                 session.search_bibNos(keywords="12345678")
@@ -730,11 +836,11 @@ class TestPlatformSession:
 class TestLivePlatform:
     """Runs rudimentary tests against live NYPL Platform endpoints"""
 
+    AGENT = f"{os.getenv('NP_AGENT')}"
+
     def test_get_bib(self, live_token, bib_data_keys):
         """Tests get_bib method"""
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_bib(id=21790265)
 
             assert response.status_code == 200
@@ -742,16 +848,15 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265"
             )
-            assert response.request.headers["User-Agent"] == agent
+            assert response.request.headers["User-Agent"] == self.AGENT
             assert response.request.headers["Accept"] == "application/json"
-            assert sorted(response.json().keys()) == sorted(["data", "count", "statusCode"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "statusCode"]
+            )
             assert sorted(response.json()["data"].keys()) == bib_data_keys
 
     def test_get_bib_list(self, live_token, bib_data_keys):
-
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_bib_list(id=["b21790265a", "b21721339a"], limit=15)
 
             assert response.status_code == 200
@@ -759,14 +864,14 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/bibs?id=21790265%2C21721339&nyplSource=sierra-nypl&deleted=False&limit=15&offset=0"
             )
-            assert sorted(response.json().keys()) == sorted(["data", "count", "statusCode"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "statusCode"]
+            )
             assert response.json()["count"] == 2
             assert sorted(response.json()["data"][0].keys()) == bib_data_keys
 
     def test_get_bib_items(self, live_token, bib_items_keys):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_bib_items(id="b21790265a")
 
             assert response.status_code == 200
@@ -774,14 +879,14 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265/items"
             )
-            assert sorted(response.json().keys()) == sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "totalCount", "statusCode", "debugInfo"]
+            )
             assert response.json()["count"] == 1
             assert sorted(response.json()["data"][0].keys()) == bib_items_keys
 
     def test_get_item_list(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.get_item_list(id="i372231731")
 
             assert response.status_code == 200
@@ -789,13 +894,13 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/items?id=37223173&nyplSource=sierra-nypl&deleted=False&limit=10&offset=0"
             )
-            assert sorted(response.json().keys()) == sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "totalCount", "statusCode", "debugInfo"]
+            )
 
     def test_check_bib_is_research(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
-            response = session.check_bib_is_research(id="b21790265a")
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
+            response = session.check_bib_is_research(id="21790265a")
 
             assert response.status_code == 200
             assert (
@@ -806,10 +911,18 @@ class TestLivePlatform:
                 ["nyplSource", "id", "isResearch"]
             )
 
+    def test_get_hold_requests(self, live_token):
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
+            response = session.get_hold_requests(patron="3917246")
+            json_response = response.json()
+            assert response.status_code == 200
+            assert json_response is not None
+            assert sorted(list(json_response.keys())) == sorted(
+                ["data", "count", "statusCode", "debugInfo"]
+            )
+
     def test_search_standardNos(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.search_standardNos(
                 keywords=["9780316230032", "0674976002"], limit=12
             )
@@ -821,9 +934,7 @@ class TestLivePlatform:
             )
 
     def test_search_controlNos(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.search_controlNos(
                 keywords=["1089804986", "1006480637"], limit=1, offset=1
             )
@@ -834,9 +945,7 @@ class TestLivePlatform:
         )
 
     def test_search_bibNos(self, live_token):
-        agent = os.getenv("NP_AGENT")
-        agent = f"{agent}"
-        with PlatformSession(authorization=live_token, agent=agent) as session:
+        with PlatformSession(authorization=live_token, agent=self.AGENT) as session:
             response = session.search_bibNos(
                 keywords=[21790265, 21721339], limit=1, offset=1
             )

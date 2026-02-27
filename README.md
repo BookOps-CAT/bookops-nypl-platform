@@ -3,7 +3,7 @@
 # bookops-nypl-platform client
 BookOps Python wrapper around NYPL Platform API
 
-Requries Python 3.8 & up.
+Requries Python 3.9 & up.
 
 
 bookops-nypl-platform client provides a Python interface for the internal NYPL Platform API.
@@ -11,7 +11,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 ## Version
 
-> 0.5.0
+> 0.6.0
 
 ## Installation
 
@@ -89,6 +89,16 @@ with PlatformSession(authorization=token) as session:
 ```
 
 ## Changelog
+### [0.6.0] - 2026-02-26
+#### Added
+ + `get_hold_requests` and `get_hold_requests_by_id` methods to retrieve hold request data from platform API
+ + added `types-requests` as a dependency
+#### Changed
+ + updated `pyproject.toml` formatting to support poetry 2
+ + fixed typos
+#### Removed
+ + support for python 3.8
+ + unnecessary magic lines and type imports
 
 ### [0.5.0] - 2024-11-25
 #### Added
@@ -184,6 +194,7 @@ with PlatformSession(authorization=token) as session:
 + [NYPL Platform API Documentation](https://docs.google.com/document/d/1p3q9OT9latXqON20WDh4CNPxIShUunfGgqT163r-Caw/edit?usp=sharing)
 + [ruby-nypl-platfom-api-client](https://github.com/NYPL/ruby-nypl-platform-api-client)
 
+[0.6.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.2.1...v0.3.0

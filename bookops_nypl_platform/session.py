@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.session
 =============================
@@ -8,7 +6,7 @@ to NYPL Platform API
 """
 
 import sys
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import requests
 
@@ -44,11 +42,8 @@ class PlatformSession(requests.Session):
         authorization: PlatformToken,
         target: str = "prod",
         agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            3,
-            3,
-        ),
-    ):
+        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (3, 3),
+    ) -> None:
         requests.Session.__init__(self)
 
         self.authorization = authorization
@@ -88,7 +83,7 @@ class PlatformSession(requests.Session):
     def _check_bib_is_research_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}/is-research"
 
-    def _fetch_new_token(self):
+    def _fetch_new_token(self) -> None:
         """
         Requests new access token from the oauth server and updates
         session headers with new Authorization
@@ -108,18 +103,24 @@ class PlatformSession(requests.Session):
     def _get_bib_items_url(self, id: Union[str, int], nyplSource: str) -> str:
         return f"{self.base_url}/bibs/{nyplSource}/{id}/items"
 
+    def _get_hold_requests_url(self) -> str:
+        return f"{self.base_url}/hold-requests"
+
+    def _get_hold_requests_by_id_url(self, id: Union[str, int]) -> str:
+        return f"{self.base_url}/hold-requests/{id}"
+
     def _get_item_list_url(self) -> str:
         return f"{self.base_url}/items"
 
     def _prep_multi_keywords(
-        self, keywords: Union[str, List[str], List[int], None]
+        self, keywords: Union[str, int, list[str], list[int], None]
     ) -> Optional[str]:
         """
         Verifies or converts passed keywords into a comma separated string.
 
         Args:
             keywords:       a comma separated string of keywords or a list
-                            of strings or integers
+                            of strings and/or integers
 
         Returns:
             keywords:       a comma separated string of keywords
@@ -165,13 +166,13 @@ class PlatformSession(requests.Session):
 
     def _prep_sierra_numbers(self, sids: str) -> str:
         """
-        Verifies or conversts passed Sierra bib numbers into a comma separated string.
+        Verifies or converts Sierra bib numbers into a comma separated string.
 
         Args:
             sids:           a comma separated string of Sierra bib numbers
 
         Returns:
-            verified_nos:   a comma separated string of Sierrra bib numbers
+            verified_nos:   a comma separated string of Sierra bib numbers
         """
         verified_nos = []
 
@@ -181,7 +182,7 @@ class PlatformSession(requests.Session):
 
         return ",".join(verified_nos)
 
-    def _update_authorization(self):
+    def _update_authorization(self) -> None:
         """
         Updates Bearer token in PlatformSession headers
         """
@@ -191,7 +192,7 @@ class PlatformSession(requests.Session):
         self,
         id: Union[str, int],
         nyplSource: str = "sierra-nypl",
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Requests a specific resource using its id number.
@@ -236,16 +237,16 @@ class PlatformSession(requests.Session):
 
     def get_bib_list(
         self,
-        id: Union[str, List[str], List[int], None] = None,
-        standardNumber: Union[str, List[str], None] = None,
-        controlNumber: Union[str, List[str], None] = None,
+        id: Union[str, list[str], list[int], None] = None,
+        standardNumber: Union[str, list[str], None] = None,
+        controlNumber: Union[str, list[str], None] = None,
         nyplSource: str = "sierra-nypl",
         deleted: bool = False,
         createdDate: Optional[str] = None,
         updatedDate: Optional[str] = None,
         limit: int = 10,
         offset: int = 0,
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Retrieve multiple bib resources using a variety of indexes, for example:
@@ -289,7 +290,7 @@ class PlatformSession(requests.Session):
             id = self._prep_sierra_numbers(id)
 
         url = self._get_bib_list_url()
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "id": id,
             "standardNumber": standardNumber,
             "controlNumber": controlNumber,
@@ -320,7 +321,7 @@ class PlatformSession(requests.Session):
         self,
         id: Union[str, int],
         nyplSource: str = "sierra-nypl",
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Retrieves items linked to a specified bib
@@ -367,8 +368,8 @@ class PlatformSession(requests.Session):
 
     def get_item_list(
         self,
-        id: Union[str, List[str], List[int], None] = None,
-        barcode: Optional[str] = None,
+        id: Union[str, int, list[str], list[int], None] = None,
+        barcode: Union[str, int, list[str], list[int], None] = None,
         bibId: Union[str, int, None] = None,
         nyplSource: str = "sierra-nypl",
         deleted: bool = False,
@@ -376,16 +377,17 @@ class PlatformSession(requests.Session):
         updatedDate: Optional[str] = None,
         limit: int = 10,
         offset: int = 0,
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Retrieve multiple item resources using a variety of indexes, for example:
         Sierra item numbers, barcodes, bib number.
 
         Args:
-            id:             list of item record ids; can be a comma separated string
-                            or list of strings
-            barcode:        barcode string
+            id:             list of item record ids; can be a comma separated string,
+                            integer, or a list of strings and/or integers
+            barcode:        list of barcodes; can be a string, integer, or list of
+                            strings and/or integers
             bibId:          Sierra bib number
             nyplSource:     data source; default 'sierra-nypl'
             deleted:        True or False
@@ -409,6 +411,7 @@ class PlatformSession(requests.Session):
         if not any([id, barcode, bibId]):
             raise BookopsPlatformError("Missing required positional argument.")
 
+        # verify Sierra item IDs
         if id:
             id = self._prep_sierra_numbers(id)
 
@@ -416,8 +419,12 @@ class PlatformSession(requests.Session):
         if bibId:
             bibId = self._prep_sierra_number(bibId)
 
+        # format any barcodes
+        if barcode:
+            barcode = self._prep_multi_keywords(barcode)
+
         url = self._get_item_list_url()
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "id": id,
             "barcode": barcode,
             "bibId": bibId,
@@ -448,10 +455,10 @@ class PlatformSession(requests.Session):
         self,
         id: Union[str, int],
         nyplSource: str = "sierra-nypl",
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Checks if bib is a reaserch libraries bib
+        Checks if bib is a research libraries bib
 
         Args:
             id:             resource id; for Sierra bibliographic
@@ -492,13 +499,91 @@ class PlatformSession(requests.Session):
         except Exception:
             raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
 
+    def get_hold_requests(
+        self,
+        patron: Optional[str] = None,
+        record: Optional[str] = None,
+        hooks: Optional[dict[str, Callable]] = None,
+    ) -> requests.Response:
+        """
+        Get hold requests for a patron.
+
+        Args:
+            patron:
+                sierra patron ID
+            nyplSource:
+                data source; default 'sierra-nypl'; required
+            hooks:
+                Requests library hook system that can be used for signal event
+                handling, see more at:
+                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+        url = self._get_hold_requests_url()
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        payload = {}
+        if record:
+            payload["record"] = record
+        if patron:
+            payload["patron"] = patron
+        if not payload:
+            raise ValueError("Request must contain record ID and/or patron ID.")
+        # send request
+        try:
+            response = self.get(url, params=payload, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
+    def get_hold_requests_by_id(
+        self, id: str, hooks: Optional[dict[str, Callable]] = None
+    ) -> requests.Response:
+        """
+        Get hold request record by hold request ID.
+
+        Args:
+            id:
+                hold request ID
+            hooks:
+                Requests library hook system that can be used for signal event
+                handling, see more at:
+                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+
+        Returns:
+            `requests.Response` object
+        """
+        url = self._get_hold_requests_by_id_url(id=id)
+        # check if token expired and request new one if needed
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+
+        # send request
+        try:
+            response = self.get(url, timeout=self.timeout, hooks=hooks)
+            return response
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            raise BookopsPlatformError(f"Connection error: {sys.exc_info()}")
+        except BookopsPlatformError:
+            raise
+        except Exception:
+            raise BookopsPlatformError(f"Unexpected request error: {sys.exc_info()[0]}")
+
     def search_standardNos(
         self,
-        keywords: Union[str, List[str]],
+        keywords: Union[str, list[str]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 0,
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Makes a request for bibs with matching standard numbers (ISBNs or UPCs) from the
@@ -528,7 +613,7 @@ class PlatformSession(requests.Session):
             )
 
         url = self._get_bib_list_url()
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "standardNumber": standardNumbers,
             "nyplSource": "sierra-nypl",
             "deleted": deleted,
@@ -553,11 +638,11 @@ class PlatformSession(requests.Session):
 
     def search_controlNos(
         self,
-        keywords: Union[str, List[str]],
+        keywords: Union[str, list[str]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 0,
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Makes a request for bibs with matching control numbers from the 001 MARC tag.
@@ -585,7 +670,7 @@ class PlatformSession(requests.Session):
             )
 
         url = self._get_bib_list_url()
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "controlNumber": controlNumbers,
             "nyplSource": "sierra-nypl",
             "deleted": deleted,
@@ -610,11 +695,11 @@ class PlatformSession(requests.Session):
 
     def search_bibNos(
         self,
-        keywords: Union[str, List[str], List[int]],
+        keywords: Union[str, list[str], list[int]],
         deleted: bool = False,
         limit: int = 10,
         offset: int = 0,
-        hooks: Optional[Dict[str, Callable]] = None,
+        hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
         Makes a request for resources with matching Sierra bib numbers.
@@ -649,7 +734,7 @@ class PlatformSession(requests.Session):
 
         # prep request
         url = self._get_bib_list_url()
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "id": ids,
             "nyplSource": "sierra-nypl",
             "deleted": deleted,

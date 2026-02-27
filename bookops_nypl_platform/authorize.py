@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.authorize
 ===============================
-This module provides method to authenicate subsequent requests to NYPL Platform
+This module provides method to authenticate subsequent requests to NYPL Platform
 by obtaining an access token used for authorization.
 """
+
 import datetime
 import sys
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import requests
-
 
 from . import __title__, __version__
 from .errors import BookopsPlatformError
@@ -42,28 +40,20 @@ class PlatformToken:
         client_secret: str,
         oauth_server: str,
         agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            3,
-            3,
-        ),
-    ):
+        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (3, 3),
+    ) -> None:
         """Constructor"""
 
-        for value in (client_id, client_secret, oauth_server):
-            if not value:
-                raise BookopsPlatformError("Missing Platform authentication argument.")
+        if not all([client_id, client_secret, oauth_server]):
+            raise BookopsPlatformError("Missing Platform authentication argument.")
 
-        self.token_str = None
-        self.expires_on = None
-        self.server_response = None
+        self.agent = agent if agent else f"{__title__}/{__version__}"
         self.auth = (client_id, client_secret)
+        self.expires_on: datetime.datetime
         self.oauth_server = oauth_server
+        self.server_response: requests.Response
         self.timeout = timeout
-
-        if agent is None:
-            self.agent = f"{__title__}/{__version__}"
-        else:
-            self.agent = agent
+        self.token_str: str
 
         # make access token request
         self._get_token()
@@ -71,7 +61,7 @@ class PlatformToken:
     def _token_url(self) -> str:
         return f"{self.oauth_server}/oauth/token"
 
-    def _parse_access_token_string(self, server_response: Dict[str, Any]) -> str:
+    def _parse_access_token_string(self, server_response: dict[str, Any]) -> str:
         """
         Parsers access token string from auth_server response
 
@@ -89,14 +79,14 @@ class PlatformToken:
             )
 
     def _calculate_expiration_time(
-        self, server_response: Dict[str, Any]
+        self, server_response: dict[str, Any]
     ) -> datetime.datetime:
         """
-        Calculates access token expiration time based on it's life lenght
+        Calculates access token expiration time based on it's life length
         indicated in oauth_server response
 
         Args:
-            server_resopnse:    oauth_server response in dict format
+            server_response:    oauth_server response in dict format
 
         Returns:
             expires_on:         datetime object
@@ -111,7 +101,7 @@ class PlatformToken:
                 "Missing expires_in parameter in the oauth_server response."
             )
 
-    def _get_token(self):
+    def _get_token(self) -> None:
         """
         Fetches NYPL Platform access token
         """
@@ -133,16 +123,18 @@ class PlatformToken:
                 self.expires_on = self._calculate_expiration_time(response.json())
             else:
                 raise BookopsPlatformError(
-                    f"Invalid request. Oauth server retruned error: {response.json()}"
+                    f"Invalid request. Oauth server returned error: {response.json()}"
                 )
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             raise BookopsPlatformError(f"Trouble connecting: {sys.exc_info()[0]}")
         except BookopsPlatformError:
             raise
         except Exception:
-            raise BookopsPlatformError(f"Unexpected error occured: {sys.exc_info()[0]}")
+            raise BookopsPlatformError(
+                f"Unexpected error occurred: {sys.exc_info()[0]}"
+            )
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """
         Checks if token is expired
 
@@ -159,7 +151,7 @@ class PlatformToken:
         else:
             return False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<token: {self.token_str}, "
             f"expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, "

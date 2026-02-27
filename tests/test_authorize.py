@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import os
 
 import pytest
-
 
 from bookops_nypl_platform.authorize import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
@@ -12,7 +9,7 @@ from bookops_nypl_platform.errors import BookopsPlatformError
 
 class TestPlatformToken:
     """
-    Test PlatfromToken class
+    Test PlatformToken class
     """
 
     @pytest.mark.parametrize(
@@ -47,7 +44,7 @@ class TestPlatformToken:
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert token.agent == f"{__title__}/{__version__}"
 
-    def test_deafault_timeout(self, mock_successful_post_token_response):
+    def test_default_timeout(self, mock_successful_post_token_response):
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert token.timeout == (3, 3)
 
@@ -67,7 +64,7 @@ class TestPlatformToken:
         token = PlatformToken("my_client_id", "my_client_secret", "oauth_url")
         assert token._token_url() == "oauth_url/oauth/token"
 
-    def test_parse_access_token_string_sucess(self, mock_token):
+    def test_parse_access_token_string_success(self, mock_token):
         token = mock_token
         res = {
             "access_token": "token_string_here",
@@ -120,11 +117,11 @@ class TestPlatformToken:
         with pytest.raises(BookopsPlatformError):
             PlatformToken("my_client_id", "my_client_secret", "oauth_url")
 
-    def test_get_token_connectionerror(self, mock_connectionerror):
+    def test_get_token_connectionerror(self, mock_connection_error):
         with pytest.raises(BookopsPlatformError):
             PlatformToken("my_client_id", "my_client_secret", "oauth_url")
 
-    def test_get_token_unexpectederror(self, mock_unexpected_error):
+    def test_get_token_unexpected_error(self, mock_unexpected_error):
         with pytest.raises(BookopsPlatformError):
             PlatformToken("my_client_id", "my_client_secret", "oauth_url")
 

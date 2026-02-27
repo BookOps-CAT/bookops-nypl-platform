@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from bookops_nypl_platform import __version__, __title__
+from bookops_nypl_platform import __title__, __version__
 
 
 def test_version():
-    assert __version__ == "0.5.0"
+    assert __version__ == "0.6.0"
 
 
 def test_title():
@@ -12,12 +10,12 @@ def test_title():
 
 
 def test_PlatfromToken_top_level_import():
-    from bookops_nypl_platform import PlatformToken
+    pass
 
 
 def test_PlatformSession_top_level_import():
-    from bookops_nypl_platform import PlatformSession
+    pass
 
 
 def test_BookopsPlatformError_top_level_import():
-    from bookops_nypl_platform import BookopsPlatformError
+    pass

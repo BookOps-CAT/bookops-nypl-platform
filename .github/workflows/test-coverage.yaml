@@ -1,4 +1,4 @@
-name: tests
+name: test coverage
 on:
   push:
     branches: 
@@ -24,4 +24,21 @@ jobs:
       - name: Install dependencies with poetry
         run: poetry install --no-root
       - name: Run tests
-        run: poetry run pytest -m "not webtest" --cov=bookops_nypl_platform/ --cov-report=xml
+        run: poetry run pytest -m "not webtest" --cov=bookops_nypl_platform/ --cov-report=xml      
+      - name: Send report to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel: true
+          github-token: ${{ secrets.GITHUB_TOKEN}}
+          flag-name: ${{ matrix.python-version}}
+          fail-on-error: false    
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true
+          fail-on-error: false
+
