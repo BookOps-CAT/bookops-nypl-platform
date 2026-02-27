@@ -113,14 +113,14 @@ class PlatformSession(requests.Session):
         return f"{self.base_url}/items"
 
     def _prep_multi_keywords(
-        self, keywords: Union[str, list[str], list[int], None]
+        self, keywords: Union[str, int, list[str], list[int], None]
     ) -> Optional[str]:
         """
         Verifies or converts passed keywords into a comma separated string.
 
         Args:
             keywords:       a comma separated string of keywords or a list
-                            of strings or integers
+                            of strings and/or integers
 
         Returns:
             keywords:       a comma separated string of keywords
@@ -368,8 +368,8 @@ class PlatformSession(requests.Session):
 
     def get_item_list(
         self,
-        id: Union[str, list[str], list[int], None] = None,
-        barcode: Optional[str] = None,
+        id: Union[str, int, list[str], list[int], None] = None,
+        barcode: Union[str, int, list[str], list[int], None] = None,
         bibId: Union[str, int, None] = None,
         nyplSource: str = "sierra-nypl",
         deleted: bool = False,
@@ -384,9 +384,10 @@ class PlatformSession(requests.Session):
         Sierra item numbers, barcodes, bib number.
 
         Args:
-            id:             list of item record ids; can be a comma separated string
-                            or list of strings
-            barcode:        barcode string
+            id:             list of item record ids; can be a comma separated string,
+                            integer, or a list of strings and/or integers
+            barcode:        list of barcodes; can be a string, integer, or list of
+                            strings and/or integers
             bibId:          Sierra bib number
             nyplSource:     data source; default 'sierra-nypl'
             deleted:        True or False
@@ -410,12 +411,17 @@ class PlatformSession(requests.Session):
         if not any([id, barcode, bibId]):
             raise BookopsPlatformError("Missing required positional argument.")
 
+        # verify Sierra item IDs
         if id:
             id = self._prep_sierra_numbers(id)
 
         # additionally verify Sierra bib numbers
         if bibId:
             bibId = self._prep_sierra_number(bibId)
+
+        # format any barcodes
+        if barcode:
+            barcode = self._prep_multi_keywords(barcode)
 
         url = self._get_item_list_url()
         payload: dict[str, Any] = {

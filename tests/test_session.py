@@ -424,6 +424,28 @@ class TestPlatformSession:
                 session.get_bib_items("12345678")
 
     @pytest.mark.parametrize(
+        "id_arg,ba_arg,bi_arg",
+        [
+            ("12345678", None, None),
+            (["12345678", "23456789"], None, None),
+            (["12345678", 23456789], None, None),
+            (["i304400737,i304400750"], None, None),
+            (None, "33333834590594", None),
+            (None, 33333834590594, None),
+            (None, ["33333834590594", "333331234567890"], None),
+            (None, ["33333834590594", 333331234567890], None),
+            (None, [33333834590594, 333331234567890], None),
+            (None, None, "b198280646"),
+        ],
+    )
+    def test_get_item_list_success(
+        self, mock_token, id_arg, ba_arg, bi_arg, mock_successful_session_get_response
+    ):
+        with PlatformSession(authorization=mock_token) as session:
+            response = session.get_item_list(id_arg, ba_arg, bi_arg)
+            assert response.status_code == 200
+
+    @pytest.mark.parametrize(
         "id_arg,ba_arg,bi_arg", [(None, None, None), ("", "", ""), ([], [], [])]
     )
     def test_get_item_list_arguments_errors(self, mock_token, id_arg, ba_arg, bi_arg):
@@ -432,28 +454,6 @@ class TestPlatformSession:
             with pytest.raises(BookopsPlatformError) as exc:
                 session.get_item_list(id_arg, ba_arg, bi_arg)
             assert err_msg in str(exc.value)
-
-    @pytest.mark.parametrize(
-        "id_arg,ba_arg,bi_arg",
-        [
-            ("12345678", None, None),
-            (None, "33333834590594", None),
-            (None, None, "b198280646"),
-        ],
-    )
-    def test_get_item_list_correct_ids(
-        self, mock_token, id_arg, ba_arg, bi_arg, mock_successful_session_get_response
-    ):
-        with PlatformSession(authorization=mock_token) as session:
-            with does_not_raise():
-                session.get_item_list(id_arg, ba_arg, bi_arg)
-
-    def test_get_item_list_successful_request(
-        self, mock_token, mock_successful_session_get_response
-    ):
-        with PlatformSession(authorization=mock_token) as session:
-            response = session.get_item_list(id=["i304400737,i304400750"])
-            assert response.status_code == 200
 
     def test_get_item_list_with_stale_token(
         self, mock_token, mock_successful_session_get_response
