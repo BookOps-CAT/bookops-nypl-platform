@@ -41,24 +41,19 @@ class PlatformToken:
         oauth_server: str,
         agent: Optional[str] = None,
         timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (3, 3),
-    ):
+    ) -> None:
         """Constructor"""
 
-        for value in (client_id, client_secret, oauth_server):
-            if not value:
-                raise BookopsPlatformError("Missing Platform authentication argument.")
+        if not all([client_id, client_secret, oauth_server]):
+            raise BookopsPlatformError("Missing Platform authentication argument.")
 
-        self.token_str = None
-        self.expires_on = None
-        self.server_response = None
+        self.agent = agent if agent else f"{__title__}/{__version__}"
         self.auth = (client_id, client_secret)
+        self.expires_on: datetime.datetime
         self.oauth_server = oauth_server
+        self.server_response: requests.Response
         self.timeout = timeout
-
-        if agent is None:
-            self.agent = f"{__title__}/{__version__}"
-        else:
-            self.agent = agent
+        self.token_str: str
 
         # make access token request
         self._get_token()
@@ -106,7 +101,7 @@ class PlatformToken:
                 "Missing expires_in parameter in the oauth_server response."
             )
 
-    def _get_token(self):
+    def _get_token(self) -> None:
         """
         Fetches NYPL Platform access token
         """
@@ -139,7 +134,7 @@ class PlatformToken:
                 f"Unexpected error occurred: {sys.exc_info()[0]}"
             )
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """
         Checks if token is expired
 
@@ -156,7 +151,7 @@ class PlatformToken:
         else:
             return False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<token: {self.token_str}, "
             f"expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, "
