@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import datetime
-import os
 import json
+import os
 
 import pytest
 import requests
-
 
 from bookops_nypl_platform import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
@@ -153,8 +150,6 @@ def live_token(live_keys):
         agent=os.getenv("NP_AGENT"),
     )
     return token
-
-
 
 
 @pytest.fixture

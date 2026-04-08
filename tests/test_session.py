@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.session testing
 """
-from contextlib import contextmanager
+
 import datetime
 import os
+from contextlib import contextmanager
+
 import pytest
 
 from bookops_nypl_platform import __title__, __version__
-
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_nypl_platform.session import PlatformSession
 
@@ -744,7 +743,9 @@ class TestLivePlatform:
             )
             assert response.request.headers["User-Agent"] == agent
             assert response.request.headers["Accept"] == "application/json"
-            assert sorted(response.json().keys()) == sorted(["data", "count", "statusCode"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "statusCode"]
+            )
             assert sorted(response.json()["data"].keys()) == bib_data_keys
 
     def test_get_bib_list(self, live_token, bib_data_keys):
@@ -759,7 +760,9 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/bibs?id=21790265%2C21721339&nyplSource=sierra-nypl&deleted=False&limit=15&offset=0"
             )
-            assert sorted(response.json().keys()) == sorted(["data", "count", "statusCode"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "statusCode"]
+            )
             assert response.json()["count"] == 2
             assert sorted(response.json()["data"][0].keys()) == bib_data_keys
 
@@ -774,7 +777,9 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/bibs/sierra-nypl/21790265/items"
             )
-            assert sorted(response.json().keys()) == sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "totalCount", "statusCode", "debugInfo"]
+            )
             assert response.json()["count"] == 1
             assert sorted(response.json()["data"][0].keys()) == bib_items_keys
 
@@ -789,7 +794,9 @@ class TestLivePlatform:
                 response.url
                 == "https://platform.nypl.org/api/v0.1/items?id=37223173&nyplSource=sierra-nypl&deleted=False&limit=10&offset=0"
             )
-            assert sorted(response.json().keys()) == sorted(["data", "count", "totalCount", "statusCode", "debugInfo"])
+            assert sorted(response.json().keys()) == sorted(
+                ["data", "count", "totalCount", "statusCode", "debugInfo"]
+            )
 
     def test_check_bib_is_research(self, live_token):
         agent = os.getenv("NP_AGENT")

@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.authorize
 ===============================
 This module provides method to authenicate subsequent requests to NYPL Platform
 by obtaining an access token used for authorization.
 """
+
 import datetime
 import sys
 from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
-
 
 from . import __title__, __version__
 from .errors import BookopsPlatformError

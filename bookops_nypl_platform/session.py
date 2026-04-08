@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.session
 =============================

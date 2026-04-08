@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import os
 
 import pytest
-
 
 from bookops_nypl_platform.authorize import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
