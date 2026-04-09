@@ -1,6 +1,6 @@
 [project]
 name = "bookops-nypl-platform"
-version = "0.5.0"
+version = "0.6.0"
 description = "BookOps Python wrapper around NYPL Platform API"
 license = "MIT"
 authors = [{name = "Tomasz Kalata", email = "klingaroo@gmail.com"}, {name = "Charlotte Kostelic", email = "charlottekostelic@bookops.org"}]
@@ -22,11 +22,17 @@ markers = ["webtest: mark a test hitting live endpoints"]
 addopts = '-m "not webtest" --cov=bookops_nypl_platform/'
 
 [tool.coverage.run]
+branch = true
 relative_files = true
 source = ["."]
-branch = true
 omit = ["tests/*"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "ANN"]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true

@@ -88,6 +88,7 @@ def mock_successful_session_get_response(monkeypatch):
         return MockSuccessfulHTTP200SessionResponse()
 
     monkeypatch.setattr(requests.Session, "get", mock_api_response)
+    monkeypatch.setattr(requests.Session, "post", mock_api_response)
 
 
 @pytest.fixture
@@ -99,23 +100,27 @@ def mock_token(mock_successful_post_token_response):
 def mock_unexpected_error(monkeypatch):
     monkeypatch.setattr("requests.post", MockUnexpectedException)
     monkeypatch.setattr("requests.Session.get", MockUnexpectedException)
+    monkeypatch.setattr("requests.Session.post", MockUnexpectedException)
 
 
 @pytest.fixture
 def mock_timeout(monkeypatch):
     monkeypatch.setattr("requests.post", MockTimeout)
     monkeypatch.setattr("requests.Session.get", MockTimeout)
+    monkeypatch.setattr("requests.Session.post", MockTimeout)
 
 
 @pytest.fixture
-def mock_connectionerror(monkeypatch):
+def mock_connection_error(monkeypatch):
     monkeypatch.setattr("requests.post", MockConnectionError)
     monkeypatch.setattr("requests.Session.get", MockConnectionError)
+    monkeypatch.setattr("requests.Session.post", MockConnectionError)
 
 
 @pytest.fixture
-def mock_bookopsplatformerror(monkeypatch):
+def mock_platform_error(monkeypatch):
     monkeypatch.setattr("requests.Session.get", MockBookopsPlatformError)
+    monkeypatch.setattr("requests.Session.post", MockBookopsPlatformError)
 
 
 @pytest.fixture
@@ -123,9 +128,9 @@ def mock_datetime_now(monkeypatch):
     monkeypatch.setattr(datetime, "datetime", FakeDate)
 
 
-@pytest.fixture
+@pytest.fixture(scope="package")
 def live_keys():
-    if os.name == "nt":
+    if not os.getenv("GITHUB_ACTIONS"):
         fh = os.path.join(
             os.environ["USERPROFILE"], ".cred/.platform/tomasz_platform.json"
         )
@@ -136,12 +141,8 @@ def live_keys():
             os.environ["NP_OAUTH_SERVER"] = data["oauth-server"]
             os.environ["NP_AGENT"] = data["agent"]
 
-    else:
-        # Github Actions env variables defined in the repository settings
-        pass
 
-
-@pytest.fixture
+@pytest.fixture(scope="module")
 def live_token(live_keys):
     token = PlatformToken(
         client_id=os.getenv("NP_CLIENT_ID"),
