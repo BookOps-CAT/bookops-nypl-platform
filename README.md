@@ -3,7 +3,7 @@
 # bookops-nypl-platform client
 BookOps Python wrapper around NYPL Platform API
 
-Requries Python 3.9 & up.
+Requries Python 3.10 & up.
 
 
 bookops-nypl-platform client provides a Python interface for the internal NYPL Platform API.
@@ -91,13 +91,15 @@ with PlatformSession(authorization=token) as session:
 ## Changelog
 ### [0.6.0] - 2026-02-26
 #### Added
- + `get_hold_requests` and `get_hold_requests_by_id` methods to retrieve hold request data from platform API
+ + support for `/hold-requests` GET endpoints with `get_hold_requests` and `get_hold_requests_by_id` methods
  + added `types-requests` as a dependency
+ + support for managing dependencies using `uv`
 #### Changed
  + updated `pyproject.toml` formatting to support poetry 2
  + fixed typos
+ + separated unit tests and test coverage into different github actions workflows
 #### Removed
- + support for python 3.8
+ + support for python 3.8 and 3.9
  + unnecessary magic lines and type imports
 
 ### [0.5.0] - 2024-11-25
