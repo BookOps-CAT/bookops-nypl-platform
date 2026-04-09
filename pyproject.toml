@@ -4,15 +4,17 @@ version = "0.6.0"
 description = "BookOps Python wrapper around NYPL Platform API"
 license = "MIT"
 authors = [{name = "Tomasz Kalata", email = "klingaroo@gmail.com"}, {name = "Charlotte Kostelic", email = "charlottekostelic@bookops.org"}]
+exclude = ["bookops_nypl_platform/temp.py", "bookops_nypl_platform/temp/*"]
 readme = "README.md"
-requires-python = ">=3.9"
 keywords = ["api", "cataloging", "bibliographic records", "library metadata", "nypl"]
-dependencies = ["requests (>=2.32.3, <3.0.0)",  "types-requests (>=2.32.4.20260107,<3.0.0.0)"]
+requires-python = ">=3.10"
+dependencies = ["requests (>=2.24.0)", "types-requests (>=2.28.0)"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-pytest-mock = "^3.14.0"
-pytest-cov = "^5.0.0"
+[dependency-groups]
+dev = [
+    "pytest (>=8.3.3)", 
+    "pytest-cov (>=5.0.0)", 
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -34,10 +36,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.3,<9",
-    "pytest-cov>=5.0.0,<6",
-    "pytest-mock>=3.14.0,<4"
-]
