@@ -11,7 +11,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 ## Version
 
-> 0.6.0
+> 0.7.0
 
 ## Installation
 
@@ -89,6 +89,18 @@ with PlatformSession(authorization=token) as session:
 ```
 
 ## Changelog
+### [0.7.0] - 2026-05-20
+#### Added
+ + support for `/item/{nyplSource}/{id}` GET endpoint with `get_item` method which retrieves a single item record by its item ID
+#### Changed
+ + reformatted docstrings throughout package for better formatting within IDEs
+ + updated dependencies:
+  + `requests` 2.34.0
+  + `types-requests` 2.33.0.20260518
+ + updated dev dependencies:
+  + `pytest` 9.0.3
+  + `pytest-cov` 7.1.0
+  
 ### [0.6.0] - 2026-02-26
 #### Added
  + support for `/hold-requests` GET endpoints with `get_hold_requests` and `get_hold_requests_by_id` methods
@@ -196,6 +208,7 @@ with PlatformSession(authorization=token) as session:
 + [NYPL Platform API Documentation](https://docs.google.com/document/d/1p3q9OT9latXqON20WDh4CNPxIShUunfGgqT163r-Caw/edit?usp=sharing)
 + [ruby-nypl-platfom-api-client](https://github.com/NYPL/ruby-nypl-platform-api-client)
 
+[0.7.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.3.0...v0.4.0

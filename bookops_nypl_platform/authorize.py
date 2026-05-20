@@ -21,17 +21,32 @@ class PlatformToken:
     Supports only client_credential flow.
 
     Args:
-        client_id:      client id
-        client_secret:  client secret
-        oauth_server:   NYPL OAuth Server
-        agent:          "User-Agent" parameter to be passed in the request
-                        header
-        timeout:        how long to wait for server to respond before
-                        giving up; default value is 3 seconds
+        client_id:
+            client id
+        client_secret:
+            client secret
+        oauth_server:
+            NYPL OAuth Server
+        agent:
+            "User-Agent" parameter to be passed in the request header
+        timeout:
+            how long to wait for server to respond before giving up;
+            default value is 3 seconds
 
     Example:
+        ```py
+        from bookops_nypl_platform import PlatformToken
 
-
+        token = PlatformToken(
+            client_id="my_client_id",
+            client_secret="my_secret",
+            oauth_server="oauth.server.com",
+            agent="my_app/1.0.0")
+        print(token.token_str)
+        #>"tk_Yebz4BpEp9dAsghA7KpWx6dYD1OZKWBlHjqW"
+        print(token.is_expired())
+        #>False
+        ```
     """
 
     def __init__(
@@ -66,10 +81,11 @@ class PlatformToken:
         Parsers access token string from auth_server response
 
         Args:
-            server_response:    oauth_server response in dict format
+            server_response:
+                response from oauth server in dict format
 
         Returns:
-            access_token
+            access_token as a string
         """
         try:
             return server_response["access_token"]
@@ -86,10 +102,11 @@ class PlatformToken:
         indicated in oauth_server response
 
         Args:
-            server_response:    oauth_server response in dict format
+            server_response:
+                response from oauth server in dict format
 
         Returns:
-            expires_on:         datetime object
+            expiration of token as a datetime object
         """
         try:
             expires_on = datetime.datetime.now() + datetime.timedelta(
@@ -102,9 +119,7 @@ class PlatformToken:
             )
 
     def _get_token(self) -> None:
-        """
-        Fetches NYPL Platform access token
-        """
+        """Fetches NYPL Platform access token"""
         token_url = self._token_url()
         header = {"User-Agent": self.agent}
         data = {"grant_type": "client_credentials"}
@@ -135,17 +150,7 @@ class PlatformToken:
             )
 
     def is_expired(self) -> bool:
-        """
-        Checks if token is expired
-
-        Returns:
-            Boolean
-
-        Example:
-        >>> token.is_expired()
-        False
-
-        """
+        """Checks if token has expired."""
         if self.expires_on < datetime.datetime.now():
             return True
         else:
