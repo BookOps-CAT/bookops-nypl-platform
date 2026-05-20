@@ -1,4 +1,4 @@
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 __title__ = "bookops-nypl-platform"
 
 from .authorize import PlatformToken  # noqa: F401
