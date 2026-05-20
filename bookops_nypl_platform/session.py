@@ -21,13 +21,17 @@ class PlatformSession(requests.Session):
     to send requests to it.
 
     Args:
-        authorization:          authorization in form of the `PlatformToken` instance
-        target:                 production ('prod') or development ('dev')
-                                environment; default production
-        agent:                  "User-agent" parameter to be passed in the request
-                                header; usage strongly encouraged
-        timeout:                how long to wait for server to send data before
-                                giving up; default value is 3 seconds
+        authorization:
+            authorization token in form of the `PlatformToken` instance
+        target:
+            whether session should query the production ('prod') or development ('dev')
+            environment; default is `prod`
+        agent:
+            "User-agent" parameter to be passed in the request header;
+            usage is strongly encouraged
+        timeout:
+            how long to wait for server to send data before giving up;
+            default value is 3 seconds
     Example:
 
     >>> from bookops_nypl_platform import PlatformSession
@@ -119,11 +123,12 @@ class PlatformSession(requests.Session):
         Verifies or converts passed keywords into a comma separated string.
 
         Args:
-            keywords:       a comma separated string of keywords or a list
-                            of strings and/or integers
+            keywords:
+                a comma separated string of keywords or a list of strings
+                and/or integers.
 
         Returns:
-            keywords:       a comma separated string of keywords
+            keywords as a comma separated string
         """
         if isinstance(keywords, str):
             keywords = keywords.strip()
@@ -137,13 +142,14 @@ class PlatformSession(requests.Session):
 
     def _prep_sierra_number(self, sid: Union[str, int]) -> str:
         """
-        Verifies and formats Sierra bib numbers
+        Verifies and formats Sierra bib numbers.
 
         Args:
-            sid:            Sierra bib or item number as string or int
+            sid:
+                Sierra bib or item number as string or int
 
         Returns:
-            sid
+            Sierra bib or item ID as a string
         """
         err_msg = "Invalid Sierra number passed."
 
@@ -169,10 +175,11 @@ class PlatformSession(requests.Session):
         Verifies or converts Sierra bib numbers into a comma separated string.
 
         Args:
-            sids:           a comma separated string of Sierra bib numbers
+            sids:
+                a comma separated string of Sierra bib numbers
 
         Returns:
-            verified_nos:   a comma separated string of Sierra bib numbers
+            a comma separated string of Sierra bib numbers in proper format
         """
         verified_nos = []
 
@@ -183,9 +190,7 @@ class PlatformSession(requests.Session):
         return ",".join(verified_nos)
 
     def _update_authorization(self) -> None:
-        """
-        Updates Bearer token in PlatformSession headers
-        """
+        """Updates Bearer token in `PlatformSession` headers"""
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
     def get_bib(
@@ -195,17 +200,18 @@ class PlatformSession(requests.Session):
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Requests a specific resource using its id number.
+        Requests a specific bib record resource using its Sierra bib ID.
+
+        Uses GET /bibs/{nyplSource}/{id} endpoint.
 
         Args:
-            id:             resource id; for Sierra bibliographic
-                            records that means Sierra bib number with or without
-                            'b' prefix and 9th digit check
-
-            nyplSource:     data source; default 'sierra-nypl'; required
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            id:
+                Sierra bib number with or without 'b' prefix and 9th digit check
+            nyplSource:
+                data source; default is 'sierra-nypl'
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -249,28 +255,43 @@ class PlatformSession(requests.Session):
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Retrieve multiple bib resources using a variety of indexes, for example:
-        Sierra bib #s, standard numbers & control numbers
+        Retrieve multiple bib resources using a variety of indexes.
+        Available indexes include Sierra bib IDs, standard numbers & control numbers.
+
+        Uses GET /bibs endpoint.
 
         Args:
-            id:             list of resource ids; can be a comma separated string
-                            or list of strings
-            standardNumber: list of standard numbers such as ISBNs or UPCs (020 & 024
-                            MARC tags); can be a comma separated string or a list of
-                            strings
-            controlNumber:  list of MARC control numbers (001 MARC tag); can be a comma
-                            separated string or a list of strings
-            nyplSource:     data source; default 'sierra-nypl'
-            deleted:        True or False
-            createdDate:    specific start date or date range as a string, example:
-                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
-            updatedDate:    specific start date or date range as a string, example:
-                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
-            limit:          number of records to retrieve per request
-            offset:         starting number of results page
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            id:
+                a list of sierra bib IDs as a comma separated string or list of strings
+            standardNumber:
+                a list of standard numbers such as ISBNs or UPCs (020 & 024 MARC tags)
+                as a comma separated string or a list of strings
+            controlNumber:
+                a list of MARC control numbers (001 MARC tag) as a comma separated
+                string or a list of strings
+            nyplSource:
+                data source; default is 'sierra-nypl'
+            deleted:
+                whether or not the record has been deleted as a bool
+            createdDate:
+                when the record was created as a string. May be a single date or date
+                range.
+
+                Example:
+                    [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            updatedDate:
+                when the record was last updated as a string. May be a single date or
+                date range.
+
+                Example:
+                    [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            limit:
+                how many records to return. default is 10.
+            offset:
+                first record to return from results page. default is 0.
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -324,18 +345,18 @@ class PlatformSession(requests.Session):
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Retrieves items linked to a specified bib
+        Retrieves items linked to a specified bib.
+
+        Uses GET /bibs/{nyplSource}/{id}/items endpoint.
 
         Args:
-            id:             resource id; for Sierra bibliographic
-                            records that means Sierra bib number without
-                            the 'b' prefix and without the last check digit
-                            example: '21790265'
-
-            nyplSource:     data source; default 'sierra-nypl'; required
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            id:
+                Sierra bib number with or without 'b' prefix and 9th digit check
+            nyplSource:
+                data source; default is 'sierra-nypl'
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -380,26 +401,43 @@ class PlatformSession(requests.Session):
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Retrieve multiple item resources using a variety of indexes, for example:
-        Sierra item numbers, barcodes, bib number.
+        Retrieve multiple item resources using a variety of indexes.
+        Available indexes include Sierra item IDs, barcodes & bib IDs.
+
+        Uses GET /items endpoint.
 
         Args:
-            id:             list of item record ids; can be a comma separated string,
-                            integer, or a list of strings and/or integers
-            barcode:        list of barcodes; can be a string, integer, or list of
-                            strings and/or integers
-            bibId:          Sierra bib number
-            nyplSource:     data source; default 'sierra-nypl'
-            deleted:        True or False
-            createdDate:    specific start date or date range as a string, example:
-                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
-            updatedDate:    specific start date or date range as a string, example:
-                            [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
-            limit:          number of records to retrieve per request
-            offset:         starting number of results page
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            id:
+                a list of sierra item IDs as a comma separated string or list of strings
+                and/or integers
+            barcode:
+                a list of barcodes as a comma separated string or list of strings
+                and/or integers
+            bibId:
+                sierra bib ID as a string or integer
+            nyplSource:
+                data source; default is 'sierra-nypl'
+            deleted:
+                whether or not the record has been deleted as a bool
+            createdDate:
+                when the record was created as a string. May be a single date or date
+                range.
+
+                Example:
+                    [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            updatedDate:
+                when the record was last updated as a string. May be a single date or
+                date range.
+
+                Example:
+                    [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z]
+            limit:
+                how many records to return. default is 10.
+            offset:
+                first record to return from results page. default is 0.
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -458,18 +496,19 @@ class PlatformSession(requests.Session):
         hooks: Optional[dict[str, Callable]] = None,
     ) -> requests.Response:
         """
-        Checks if bib is a research libraries bib
+        Checks if a bib record is a research libraries bib.
+
+        Uses GET /bibs/{nyplSource}/{id}/is-research endpoint.
 
         Args:
-            id:             resource id; for Sierra bibliographic
-                            records that means Sierra bib number without
-                            the 'b' prefix and without the last check digit
-                            example: '21790265'
-
-            nyplSource:     data source; default 'sierra-nypl'; required
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            id:
+                Sierra bib number with or without 'b' prefix and 9th digit check.
+                May be a string or integer
+            nyplSource:
+                data source; default is 'sierra-nypl'
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -510,13 +549,12 @@ class PlatformSession(requests.Session):
 
         Args:
             patron:
-                sierra patron ID
+                Sierra patron ID as a string.
             nyplSource:
-                data source; default 'sierra-nypl'; required
+                data source; default is 'sierra-nypl'
             hooks:
-                Requests library hook system that can be used for signal event
-                handling, see more at:
-                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -550,13 +588,14 @@ class PlatformSession(requests.Session):
         """
         Get hold request record by hold request ID.
 
+        Uses GET /hold-requests endpoint.
+
         Args:
             id:
-                hold request ID
+                Hold request ID as a string.
             hooks:
-                Requests library hook system that can be used for signal event
-                handling, see more at:
-                https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -589,16 +628,21 @@ class PlatformSession(requests.Session):
         Makes a request for bibs with matching standard numbers (ISBNs or UPCs) from the
         020 or 024 MARC tag.
 
+        Uses GET /bibs endpoint and `standardNumber` query parameter.
+
         Args:
-            keywords:       list of standard numbers such as ISBNs or UPCs (020 and
-                            024 MARC tags); can be a comma separated string or a
-                            list of strings
-            deleted:        True or False
-            limit:          number of records to retrieve per request
-            offset:         starting number of results page
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            keywords:
+                a list of standard numbers such as ISBNs or UPCs (020 & 024 MARC tags)
+                as a comma separated string or a list of strings
+            deleted:
+                whether or not the record has been deleted as a bool
+            limit:
+                how many records to return. default is 10.
+            offset:
+                first record to return from results page. default is 0.
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -647,15 +691,21 @@ class PlatformSession(requests.Session):
         """
         Makes a request for bibs with matching control numbers from the 001 MARC tag.
 
+        Uses GET /bibs endpoint and `controlNumber` query parameter.
+
         Args:
-            keywords:       list of control numbers (001 MARC tag);
-                            can be a comma separated string or a list of strings
-            deleted:        True or False
-            limit:          number of records to retrieve per request
-            offset:         starting number of results page
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            keywords:
+                a list of MARC control numbers (001 MARC tag) as a comma separated
+                string or a list of strings
+            deleted:
+                whether or not the record has been deleted as a bool
+            limit:
+                how many records to return. default is 10.
+            offset:
+                first record to return from results page. default is 0.
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
@@ -704,18 +754,20 @@ class PlatformSession(requests.Session):
         """
         Makes a request for resources with matching Sierra bib numbers.
 
+        Uses GET /bibs endpoint and `id` query parameter.
+
         Args:
-            keywords:       list of Sierra bib numbers;
-                            can be a comma separated string or a list of strings or
-                            integers;
-                            bib numbers can be a string of 8 digits, or can include
-                            the 'b' prefix and last, 9th digit check
-            deleted:        True or False
-            limit:          number of records to retrieve per request
-            offset:         starting number of results page
-            hooks:          Requests library hook system that can be
-                            used for signal event handling, see more at:
-                            https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
+            keywords:
+                a list of sierra bib IDs as a comma separated string or list of strings
+            deleted:
+                whether or not the record has been deleted as a bool
+            limit:
+                how many records to return. default is 10.
+            offset:
+                first record to return from results page. default is 0.
+            hooks:
+                Requests library hook system that can be used for signal event handling,
+                see more at: https://requests.readthedocs.io/en/master/user/advanced/#event-hooks
 
         Returns:
             `requests.Response` object
