@@ -11,7 +11,7 @@ It provides functionality relevant to BookOps and is not a full implementation o
 
 ## Version
 
-> 0.7.0
+> 0.7.1
 
 ## Installation
 
@@ -89,6 +89,19 @@ with PlatformSession(authorization=token) as session:
 ```
 
 ## Changelog
+### [0.7.1] - 2026-10-26
+#### Added
++ Python 3.15 to unit tests in GitHub actions
+
+#### Changed
++ GitHub actions now uses uv to run unit tests
++ Updated `certifi` from 2024.8.30 to 2026.10.23
++ Updated `types-requests` from 2.33.0.20260518 to 2.33.0.20261006
++ Updated `pytest` from 9.0.3 to 9.1.1
+
+#### Removed
++ Support for python 3.10
+
 ### [0.7.0] - 2026-05-20
 #### Added
  + support for `/item/{nyplSource}/{id}` GET endpoint with `get_item` method which retrieves a single item record by its item ID
@@ -208,6 +221,7 @@ with PlatformSession(authorization=token) as session:
 + [NYPL Platform API Documentation](https://docs.google.com/document/d/1p3q9OT9latXqON20WDh4CNPxIShUunfGgqT163r-Caw/edit?usp=sharing)
 + [ruby-nypl-platfom-api-client](https://github.com/NYPL/ruby-nypl-platform-api-client)
 
+[0.7.1]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/BookOps-CAT/bookops-nypl-platform/compare/v0.4.0...v0.5.0

@@ -11,20 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-    name: Python ${{ matrix.python-version}} sample
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version}}
-        uses: actions/setup-python@v6
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e
         with:
           python-version: ${{ matrix.python-version}}
-      - name: Install Poetry with pipx
-        run: pipx install poetry          
-      - name: Install dependencies with poetry
-        run: poetry install --no-root
       - name: Run tests
-        run: poetry run pytest -m "not webtest" --cov=bookops_nypl_platform/ --cov-report=xml      
+        run: uv run --frozen pytest -m "not webtest" --cov=bookops_nypl_platform/   
       - name: Send report to Coveralls
         uses: coverallsapp/github-action@v2
         with:
